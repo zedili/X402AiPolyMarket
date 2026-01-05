@@ -88,7 +88,7 @@ func (l *LoginLogic) Login(req *types.LoginRequest) (*types.LoginResponse, error
 	now := time.Now()
 	user.LastLoginAt = &now
 	if err := model.DB.Save(&user).Error; err != nil {
-		logx.Warnf("Failed to update last login time: %v", err)
+		logx.Errorf("Failed to update last login time: %v", err)
 	}
 
 	// 生成 Access Token
@@ -141,4 +141,3 @@ func (l *LoginLogic) Login(req *types.LoginRequest) (*types.LoginResponse, error
 		User:         userInfo,
 	}, nil
 }
-
