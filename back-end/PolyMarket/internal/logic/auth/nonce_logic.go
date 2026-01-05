@@ -57,7 +57,7 @@ func (l *NonceLogic) GetNonce(req *types.NonceRequest) (*types.NonceResponse, er
 	}
 
 	if err := model.DB.Create(authNonce).Error; err != nil {
-		logx.Errorf("Failed to save nonce: %v", err)
+		logx.Errorf("Failed to save nonce, data=%+v, err=%v", authNonce, err)
 		return nil, utils.NewError(utils.CodeServerError, "Failed to save nonce")
 	}
 
