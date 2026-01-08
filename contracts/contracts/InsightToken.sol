@@ -3,10 +3,12 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
-import "./lib/SafeMath.sol";
+
+// import "./lib/SafeMath.sol";
 
 contract InsightToken is ERC20, AccessControl, Pausable {
-    using SafeMath for uint256;
+    // 0.8.x 版本内置了溢出检查，不需求 safeMath 库
+    // using SafeMath for uint256;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant DISCOUNTER_MANAGER_ROLE =
@@ -30,14 +32,15 @@ contract InsightToken is ERC20, AccessControl, Pausable {
     constructor(
         address _plaformTreasury,
         string memory _name,
-        string memory _symbol,
-        address initialMinter,
-        address initialTreasury
-    ) ERC20(_name, _symbol) {
+        string memory _symbol
+    )
+        // address initialMinter
+        ERC20(_name, _symbol)
+    {
         plaformTreasury = _plaformTreasury;
         discountRate = 1000; // 默认设置折扣为10%
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, initialMinter); // 初始铸造者设置为奖励池合约
+        // _grantRole(MINTER_ROLE, initialMinter); // 初始铸造者设置为奖励池合约
         _grantRole(DISCOUNTER_MANAGER_ROLE, msg.sender);
     }
 
@@ -104,9 +107,9 @@ contract InsightToken is ERC20, AccessControl, Pausable {
         address newTreasury
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(address(0) != newTreasury, "Treasury address cannot be zero");
-        address oldTreasury = treasury;
-        treasury = newTreasury;
-        emit TreasuryUpdated(oldTreasury, newTreasury);
+        address oldTreasury = plaformTreasury;
+        plaformTreasury = newTreasury;
+        emit PlaformTreasuryUpdated(oldTreasury, newTreasury);
     }
 
     /**
@@ -121,13 +124,13 @@ contract InsightToken is ERC20, AccessControl, Pausable {
     }
 
     /**
-     *  获取代币 usdc 价格
+     *  获取代币的 usdc 价格
      * @param usdcAmount USDC数量
      */
     function usdcToToken(uint256 usdcAmount) public view returns (uint256) {
-        usdcAmount = usdcAmount.mul(10 ** 18);
+        usdcAmount = usdcAmount * (10 ** 18);
         uint256 tokenPrice = getTokenPrice();
-        return usdcAmount.mul(10 ** 18).div(tokenPrice);
+        return (usdcAmount * (10 ** 18)) / tokenPrice;
     }
 
     function getTokenPrice() public view returns (uint256) {

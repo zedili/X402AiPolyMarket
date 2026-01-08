@@ -6,16 +6,38 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./InsightToken.sol";
-import "./lib/SafeMath.sol";
+
+// import "./lib/SafeMath.sol";
+
+interface IUniswapV2Router {
+    function factory() external pure returns (address);
+
+    function WETH() external pure returns (address);
+
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
+
+    function getAmountOut(
+        uint amountIn,
+        uint reserveIn,
+        uint reserveOut
+    ) external pure returns (uint amountOut);
+}
 
 contract RewardPool is AccessControl, Pausable, ReentrancyGuard {
-    using SafeMath for uint256;
+    // using SafeMath for uint256;
 
-    byte32 public constant DISTRIBUTOR_ROLE = keccak256("DISTRIBUTOR_ROLE");
-    byte32 public constant OPERATR_ROLE = keccak256("OPERATR_ROLE");
+    bytes32 public constant DISTRIBUTOR_ROLE = keccak256("DISTRIBUTOR_ROLE");
+    bytes32 public constant OPERATR_ROLE = keccak256("OPERATR_ROLE");
 
     InsightToken public immutable insightToken;
     IERC20 public immutable usdcToken;
+    IUniswapV2Router public immutable uniswapV2Router;
 
     // 黑洞地址 ：销毁代币用
     address public constant BURN_ADDRESS =
@@ -34,6 +56,8 @@ contract RewardPool is AccessControl, Pausable, ReentrancyGuard {
     }
     PendingProfit public pendingProfit;
 
+    address public plaformTreasury; // 平台金库地址，接收用户支付的服务费
+
     // 获利 事件
     event ProfitReceived(uint usdcAmount, uint256 tokenAmount);
     // 回购事件
@@ -43,18 +67,30 @@ contract RewardPool is AccessControl, Pausable, ReentrancyGuard {
         uint256 tokenBurned
     );
     // 奖励事件
-    event RewardDistribution(address[] receipts, uint256 amount);
+    event RewardDistribution(address[] receipts, uint256[] amounts);
     // 配置更新事件
-    event AllocationUpdated(uint256 amount);
+    event AllocationUpdated(
+        uint256 buybackRate,
+        uint256 rewardRate,
+        uint256 treasuryRate
+    );
+    // 利润分配完成
+    event ProfitDistributed(uint256 usdcDistribute, uint256 tokenDistribute);
 
-    constructor(address _insightToken, address _usdcToken, address _treasury) {
+    constructor(
+        address _insightToken,
+        address _usdcToken,
+        address _treasury,
+        address _uniswapV2Router
+    ) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(OPERATR_ROLE, msg.sender);
         _grantRole(DISTRIBUTOR_ROLE, msg.sender);
 
         insightToken = InsightToken(_insightToken);
         usdcToken = IERC20(_usdcToken);
-        treasury = _treasury;
+        plaformTreasury = _treasury;
+        uniswapV2Router = IUniswapV2Router(_uniswapV2Router);
     }
 
     /**
@@ -68,34 +104,35 @@ contract RewardPool is AccessControl, Pausable, ReentrancyGuard {
     ) external onlyRole(DISTRIBUTOR_ROLE) whenNotPaused {
         if (usdcAmount > 0) {
             require(
-                usdcToken.transferFrom(msg.sender, treasury, usdcAmount),
+                usdcToken.transferFrom(msg.sender, plaformTreasury, usdcAmount),
                 "transfer usdc failed"
             );
             pendingProfit.usdcAmount += usdcAmount;
         }
         if (tokenAmount > 0) {
             require(
-                insightToken.transferFrom(msg.sender, treasury, tokenAmount),
+                insightToken.transferFrom(
+                    msg.sender,
+                    plaformTreasury,
+                    tokenAmount
+                ),
                 "transfer token failed"
             );
             pendingProfit.tokenAmount += tokenAmount;
         }
 
-        emit ReceiveProfit(usdcAmount, tokenAmount);
+        emit ProfitReceived(usdcAmount, tokenAmount);
     }
 
-    // function RewardDistributionistribution(
-    //     address[] calldata receipts,
-    //     uint256[] calldata amounts
-    // ) external onlyRole(DISTRIBUTOR_ROLE) whenNotPaused nonReentrant {}
-
-    function executeDistribution(address[] calldata rewardRecipients, uint256[] calldata rewardAmounts)
-        external
-        onlyRole(OPERATOR_ROLE)
-        nonReentrant
-        whenNotPaused
-    {
-        require(rewardRecipients.length == rewardAmounts.length, "Arrays length mismatch");
+    // 利润分配
+    function executeDistribution(
+        address[] calldata rewardRecipients,
+        uint256[] calldata rewardAmounts
+    ) external onlyRole(DISTRIBUTOR_ROLE) nonReentrant whenNotPaused {
+        require(
+            rewardRecipients.length == rewardAmounts.length,
+            "Arrays length mismatch"
+        );
 
         // 1. 从“待分配利润”中锁定本次分配的 USDC 资金池
         // **注意**：只处理 USDC，代币奖励通过铸造产生。
@@ -103,10 +140,10 @@ contract RewardPool is AccessControl, Pausable, ReentrancyGuard {
         require(usdcToDistribute > 0, "No pending profit to distribute");
 
         // 2. 根据固定比例计算各部分额度（基于 USDC）
-        uint256 buybackUsdc = usdcToDistribute * buybackRate / 10000;
-        uint256 treasuryUsdc = usdcToDistribute * treasuryRate / 10000;
+        uint256 buybackUsdc = (usdcToDistribute * buybackRate) / 10000;
+        uint256 treasuryUsdc = (usdcToDistribute * treasuryRate) / 10000;
         // 奖励额度也换算成等值的 USDC，用于后续计算和审计，实际发放的是铸造的代币
-        uint256 rewardValueInUsdc = usdcToDistribute * rewardRate / 10000;
+        uint256 rewardValueInUsdc = (usdcToDistribute * rewardRate) / 10000;
 
         // 3. 奖励是铸造token 给用户
         uint256 totalRewardAmount = 0;
@@ -117,31 +154,36 @@ contract RewardPool is AccessControl, Pausable, ReentrancyGuard {
         // 此处假设固定的兑换率
         uint256 tokenPerUsdc = 100; // **必须替换为从预言机获取的动态价格！**
         uint256 maxTokensToMint = rewardValueInUsdc * tokenPerUsdc;
-        require(totalRewardAmount <= maxTokensToMint, "Rewards exceed allocation");
+        require(
+            totalRewardAmount <= maxTokensToMint,
+            "Rewards exceed allocation"
+        );
 
         // 4. 执行分配
         // 4.1 回购并销毁（真实链上操作）
         if (buybackUsdc > 0) {
             // Step 1: 授权给DEX路由器
-            usdcToken.approve(address(uniswapRouter), buybackUsdc);
+            usdcToken.approve(address(uniswapV2Router), buybackUsdc);
             // Step 2: 执行兑换，将 USDC 换成 $INSIGHT
             // 简化路径：USDC -> WETH -> $INSIGHT (具体路径取决于池子)
             address[] memory path = new address[](3);
             path[0] = address(usdcToken);
-            path[1] = uniswapRouter.WETH(); // 假设通过WETH中转
+            path[1] = uniswapV2Router.WETH(); // 假设通过WETH中转
             path[2] = address(insightToken);
-            
-            uint256[] memory amounts = uniswapRouter.swapExactTokensForTokens(
-                buybackUsdc,
-                0, // 接受任何滑点，生产环境应设置最小值
-                path,
-                address(this), // 代币先换到本合约
-                block.timestamp + 300
-            );
+
+            uint256[] memory amounts = uniswapV2Router.swapExactTokensForTokens(
+                    buybackUsdc,
+                    0, // 最小输出：0 代表接受任何滑点，生产环境应设置合理的最小值
+                    path,
+                    address(this), // 代币先换到本合约
+                    block.timestamp + 300 // deadline：5 分钟，超时则失败
+                );
             uint256 tokensBought = amounts[amounts.length - 1]; // 得到的 $INSIGHT 数量
             // Step 3: 销毁回购得来的代币
+            // insightToken.approve(address(this), tokensBought);
+            // insightToken.transferFrom(address(this),BURN_ADDRESS, tokensBought);
             insightToken.transfer(BURN_ADDRESS, tokensBought);
-            emit BuybackExecuted(buybackUsdc, tokensBought, tokensBought);
+            emit BuyBackExcuted(buybackUsdc, tokensBought, tokensBought);
             pendingProfit.usdcAmount -= buybackUsdc;
         }
 
@@ -152,16 +194,19 @@ contract RewardPool is AccessControl, Pausable, ReentrancyGuard {
             // 然后将铸造出的代币分发给用户
             for (uint256 i = 0; i < rewardRecipients.length; i++) {
                 if (rewardAmounts[i] > 0) {
-                    insightToken.transfer(rewardRecipients[i], rewardAmounts[i]);
+                    insightToken.transfer(
+                        rewardRecipients[i],
+                        rewardAmounts[i]
+                    );
                 }
             }
             // 注意：pendingProfit.tokenAmount 不再有意义，因为代币是铸造的，无需累积。
-            emit RewardsDistributed(rewardRecipients, rewardAmounts);
+            emit RewardDistribution(rewardRecipients, rewardAmounts);
         }
 
         // 4.3 转入开发金库
         if (treasuryUsdc > 0) {
-            usdcToken.transfer(devTreasury, treasuryUsdc);
+            usdcToken.transfer(plaformTreasury, treasuryUsdc);
             pendingProfit.usdcAmount -= treasuryUsdc;
         }
 
@@ -170,13 +215,13 @@ contract RewardPool is AccessControl, Pausable, ReentrancyGuard {
         // 处理可能的微小舍入误差：将剩余的一点 USDC 也转入金库或结转。
         if (pendingProfit.usdcAmount > 0) {
             // 可选：将微小余额转入金库或保留至下次
-            usdcToken.transfer(devTreasury, pendingProfit.usdcAmount);
+            usdcToken.transfer(plaformTreasury, pendingProfit.usdcAmount);
         }
         pendingProfit.usdcAmount = 0;
         // tokenAmount 不再需要追踪，可以移除该状态变量
         pendingProfit.tokenAmount = 0;
-        
-        emit DistributionCompleted(usdcToDistribute, totalRewardAmount);
+
+        emit ProfitDistributed(usdcToDistribute, totalRewardAmount);
     }
 
     /**
@@ -193,18 +238,22 @@ contract RewardPool is AccessControl, Pausable, ReentrancyGuard {
     function updateAllocation(
         uint256 _buybackRate,
         uint256 _rewardRate,
-        uint256 _treasuryRate,
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(_buybackRate + _rewardRate + _treasuryRate + _burnRate == 10000, "Sum must be 100%");
+        uint256 _treasuryRate
+    ) external onlyRole(OPERATR_ROLE) {
+        require(
+            _buybackRate + _rewardRate + _treasuryRate + burnRate == 10000,
+            "Sum must be 100%"
+        );
         buybackRate = _buybackRate;
         rewardRate = _rewardRate;
         treasuryRate = _treasuryRate;
-        emit AllocationUpdated(_buybackRate, _rewardRate, _treasuryRate, _burnRate);
+        emit AllocationUpdated(_buybackRate, _rewardRate, _treasuryRate);
     }
 
-
-    function updateDevTreasury(address _newTreasury) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function updateDevTreasury(
+        address _newTreasury
+    ) external onlyRole(OPERATR_ROLE) {
         require(_newTreasury != address(0), "Invalid address");
-        devTreasury = _newTreasury;
+        plaformTreasury = _newTreasury;
     }
 }

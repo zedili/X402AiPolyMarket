@@ -8,8 +8,9 @@
 # 1. 初始化 npm
 npm init -y
 
-# 2. 安装 Toolbox 和 hardhat（会自动安装兼容的 hardhat 版本）
+# 2. 安装 Toolbox、dotenv 和 hardhat（会自动安装兼容的 hardhat 版本）
 npm install --save-dev @nomicfoundation/hardhat-toolbox
+npm install dotenv
 
 # 4. 安装 OpenZeppelin 合约
 npm install @openzeppelin/contracts
