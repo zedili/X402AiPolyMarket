@@ -8,6 +8,8 @@ import (
 
 	"X402AiPolyMarket/PolyMarket/internal/handler/auth"
 	"X402AiPolyMarket/PolyMarket/internal/handler/health"
+	"X402AiPolyMarket/PolyMarket/internal/handler/market"
+	"X402AiPolyMarket/PolyMarket/internal/handler/trade"
 	"X402AiPolyMarket/PolyMarket/internal/handler/user"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
 
@@ -43,6 +45,27 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/user/:address",
 				Handler: user.GetPublicUserHandler(serverCtx),
 			},
+			// 市场相关公开接口
+			{
+				Method:  http.MethodGet,
+				Path:    "/market/list",
+				Handler: market.MarketListHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/market/:id",
+				Handler: market.MarketDetailHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/market/categories",
+				Handler: market.CategoriesHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/market/hot",
+				Handler: market.HotMarketsHandler(serverCtx),
+			},
 		},
 		rest.WithPrefix("/api/v1"),
 	)
@@ -64,6 +87,56 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPut,
 				Path:    "/user/profile",
 				Handler: user.UpdateProfileHandler(serverCtx),
+			},
+			// 市场相关需要认证的接口
+			{
+				Method:  http.MethodPost,
+				Path:    "/market/create",
+				Handler: market.CreateMarketHandler(serverCtx),
+			},
+			// 交易模块 - 订单管理
+			{
+				Method:  http.MethodPost,
+				Path:    "/trade/order",
+				Handler: trade.CreateOrderHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/orders",
+				Handler: trade.OrderListHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/order/:id",
+				Handler: trade.OrderDetailHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/trade/order/:id/cancel",
+				Handler: trade.CancelOrderHandler(serverCtx),
+			},
+			// 交易模块 - 交易历史
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/history",
+				Handler: trade.TradeHistoryHandler(serverCtx),
+			},
+			// 交易模块 - 持仓管理
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/positions",
+				Handler: trade.PositionListHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/position/:id",
+				Handler: trade.PositionDetailHandler(serverCtx),
+			},
+			// 交易模块 - 统计
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/stats",
+				Handler: trade.TradingStatsHandler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/api/v1"),
