@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
-import "../lib/SafeMath.sol";
+import "./lib/SafeMath.sol";
 
 contract InsightToken is ERC20, AccessControl, Pausable {
     using SafeMath for uint256;
@@ -112,11 +112,11 @@ contract InsightToken is ERC20, AccessControl, Pausable {
     /**
      * 暂停功能: 暂停合约的所有可暂停功能
      */
-    function pause() external onlyRole(PAUSER_ROLE) {
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
         _pause();
     }
 
-    function unpause() external onlyRole(PAUSER_ROLE) {
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
         _unpause();
     }
 

@@ -22,3 +22,5 @@ rad.json
 TestResults.xml
 .history/
 .idea/
+.next/
+node_modules/

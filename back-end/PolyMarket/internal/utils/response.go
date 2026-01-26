@@ -67,29 +67,3 @@ func ServerError(w http.ResponseWriter, msg string) {
 	Error(w, CodeServerError, msg)
 }
 
-// CustomError 自定义错误类型
-type CustomError struct {
-	Code int
-	Msg  string
-}
-
-func (e *CustomError) Error() string {
-	return e.Msg
-}
-
-// NewError 创建自定义错误
-func NewError(code int, msg string) error {
-	return &CustomError{
-		Code: code,
-		Msg:  msg,
-	}
-}
-
-// IsCustomError 判断是否为自定义错误
-func IsCustomError(err error) (*CustomError, bool) {
-	if customErr, ok := err.(*CustomError); ok {
-		return customErr, true
-	}
-	return nil, false
-}
-

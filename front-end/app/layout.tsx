@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Layout from "@/components/Layout";
+import { WalletProvider } from "@/providers/wallet-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,14 +20,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+      <link rel="icon" href="/favicon.svg" />
+      </head>
       <body>
         <ErrorBoundary>
-          <ThemeProvider defaultTheme="light">
-            <TooltipProvider>
-              <Toaster />
-              <Layout>{children}</Layout>
-            </TooltipProvider>
-          </ThemeProvider>
+          <WalletProvider>
+            <ThemeProvider defaultTheme="light">
+              <TooltipProvider>
+                <Toaster />
+                <Layout>{children}</Layout>
+              </TooltipProvider>
+            </ThemeProvider>
+          </WalletProvider>
         </ErrorBoundary>
       </body>
     </html>

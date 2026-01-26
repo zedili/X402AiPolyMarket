@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Brain, Wallet, Menu, X } from "lucide-react";
+import { Brain, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -68,14 +69,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              className="hidden md:flex gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary shadow-[0_0_15px_-5px_var(--color-primary)] transition-all duration-300"
-            >
-              <Wallet className="h-4 w-4" />
-              CONNECT WALLET
-            </Button>
-
+            <div className="hidden md:flex">
+              <ConnectButton
+                chainStatus="icon"
+                showBalance={false}
+                accountStatus="address"
+              />
+            </div>
             <button
               className="md:hidden p-2 text-muted-foreground hover:text-foreground"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -105,10 +105,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {item.label}
               </Link>
             ))}
-            <Button className="w-full gap-2 mt-4" size="lg">
-              <Wallet className="h-4 w-4" />
-              CONNECT WALLET
-            </Button>
+            <div className="w-full mt-4">
+              <ConnectButton
+                chainStatus="none"
+                showBalance={false}
+                accountStatus="address"
+              />
+            </div>
           </nav>
         </div>
       )}
