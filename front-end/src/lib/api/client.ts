@@ -2,7 +2,8 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { API_CONFIG } from './config';
 import { AuthManager } from './auth';
-import type { ApiResponse, ErrorCode } from './types';
+import type { ApiResponse } from './types';
+import { ErrorCode } from './types';
 
 // 创建 axios 实例
 const createAxiosInstance = (): AxiosInstance => {
