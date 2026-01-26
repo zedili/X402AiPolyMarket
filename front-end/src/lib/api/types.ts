@@ -342,3 +342,187 @@ export interface TradingStatsResponse {
   win_rate: number;
 }
 
+// ==================== AI预测相关类型 ====================
+
+export interface AIPredictionResponse {
+  market_id: number;
+  prediction_value: number;
+  confidence: number;
+  suggests: string;
+  model_version: string;
+  analysis: {
+    sentiment_score: number;
+    trend_score: number;
+    volume_indicator: number;
+    key_factors: string[];
+    risk_factors: string[];
+  };
+  historical_accuracy: number;
+  last_updated: string;
+}
+
+export interface AIAccuracyResponse {
+  overall_accuracy: number;
+  total_predictions: number;
+  correct_predictions: number;
+  by_category: Array<{
+    category: string;
+    accuracy: number;
+    total: number;
+  }>;
+  by_confidence: Array<{
+    confidence_range: string;
+    accuracy: number;
+    total: number;
+  }>;
+  recent_performance: Array<{
+    date: string;
+    accuracy: number;
+  }>;
+}
+
+// ==================== 钱包相关类型 ====================
+
+export interface WalletBalanceResponse {
+  wallet_address: string;
+  usdc_balance: number;
+  token_balance: number;
+  frozen_balance: number;
+  available_balance: number;
+  total_value_usd: number;
+  updated_at: string;
+}
+
+export interface WalletTransactionRequest {
+  page?: number;
+  page_size?: number;
+  tx_type?: number; // 0:充值 1:提现 2:交易 3:奖励 4:手续费
+  start_time?: string;
+  end_time?: string;
+}
+
+export interface WalletTransaction {
+  id: number;
+  tx_type: number;
+  tx_type_name: string;
+  amount: number;
+  currency: string;
+  balance_before: number;
+  balance_after: number;
+  related_type?: string;
+  related_id?: number;
+  tx_hash?: string;
+  status: number;
+  remark?: string;
+  created_at: string;
+}
+
+export interface WalletTransactionResponse {
+  total: number;
+  transactions: WalletTransaction[];
+}
+
+export interface PaymentAIServiceRequest {
+  service_type: string; // advanced_analysis
+  market_id: number;
+  use_token: boolean;
+  max_token_amount?: number;
+}
+
+export interface PaymentAIServiceResponse {
+  payment_id: number;
+  original_fee: number;
+  discount_rate: number;
+  token_paid: number;
+  discount_saved: number;
+  tx_hash?: string;
+  created_at: string;
+}
+
+// ==================== 排行榜相关类型 ====================
+
+export interface LeaderboardRequest {
+  period?: string; // all, month, week
+  limit?: number;
+}
+
+export interface LeaderboardItem {
+  rank: number;
+  address: string;
+  username?: string;
+  avatar_url?: string;
+  total_profit: number;
+  win_rate: number;
+  total_trades: number;
+  badge?: string;
+}
+
+export interface LeaderboardResponse {
+  period: string;
+  updated_at: string;
+  leaderboard: LeaderboardItem[];
+  my_rank?: {
+    rank: number;
+    total_profit: number;
+  };
+}
+
+export interface PlatformStatsResponse {
+  total_volume: number;
+  total_markets: number;
+  active_markets: number;
+  total_users: number;
+  active_users_24h: number;
+  total_trades: number;
+  ai_accuracy: number;
+  total_liquidity: number;
+  updated_at: string;
+}
+
+// ==================== 通知相关类型 ====================
+
+export interface NotificationListRequest {
+  page?: number;
+  page_size?: number;
+  type?: number; // 0:系统 1:交易 2:结算 3:个人
+  is_read?: boolean;
+}
+
+export interface Notification {
+  id: number;
+  type: number;
+  type_name: string;
+  title: string;
+  content: string;
+  related_type?: string;
+  related_id?: number;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface NotificationListResponse {
+  total: number;
+  unread_count: number;
+  notifications: Notification[];
+}
+
+// ==================== WebSocket相关类型 ====================
+
+export interface WebSocketMessage {
+  action?: string;
+  channel?: string;
+  market_id?: number;
+  data?: any;
+}
+
+export interface MarketPriceUpdate {
+  channel: string;
+  market_id: number;
+  data: {
+    yes_price: number;
+    no_price: number;
+    volume_24h: number;
+    timestamp: string;
+  };
+}
+
