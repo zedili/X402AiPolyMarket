@@ -302,6 +302,77 @@ const order: OrderInfo = await tradeApi.createOrder({
 - `axios`: HTTP客户端
 - `typescript`: 类型支持
 
+## 🔌 WebSocket支持
+
+### 基础使用
+
+```typescript
+import { useWebSocket, useMarketPrice } from '@/hooks/useWebSocket';
+
+// 通用WebSocket Hook
+function MarketComponent() {
+  const { isConnected, connect, disconnect } = useWebSocket({
+    channel: 'market_price',
+    marketId: 1,
+    onMessage: (data) => {
+      console.log('收到价格更新:', data);
+    },
+  });
+
+  return (
+    <div>
+      <p>连接状态: {isConnected ? '已连接' : '未连接'}</p>
+      <button onClick={connect}>连接</button>
+      <button onClick={disconnect}>断开</button>
+    </div>
+  );
+}
+
+// 专门用于市场价格更新的Hook
+function PriceDisplay({ marketId }: { marketId: number }) {
+  const { priceData, isConnected } = useMarketPrice(marketId);
+
+  if (!isConnected) return <div>连接中...</div>;
+  if (!priceData) return <div>等待数据...</div>;
+
+  return (
+    <div>
+      <p>YES价格: {priceData.yes_price}%</p>
+      <p>NO价格: {priceData.no_price}%</p>
+      <p>24小时成交量: {priceData.volume_24h}</p>
+    </div>
+  );
+}
+```
+
+### 手动使用WebSocket客户端
+
+```typescript
+import { getWebSocketClient } from '@/lib/api/websocket';
+
+const wsClient = getWebSocketClient();
+
+// 连接
+await wsClient.connect();
+
+// 订阅频道
+wsClient.subscribe('market_price', 1);
+
+// 监听消息
+const unsubscribe = wsClient.on('market_price', (data) => {
+  console.log('价格更新:', data);
+});
+
+// 取消订阅
+wsClient.unsubscribe('market_price', 1);
+
+// 取消监听
+unsubscribe();
+
+// 断开连接
+wsClient.disconnect();
+```
+
 ## 🎯 最佳实践
 
 1. **使用Hook**: 优先使用`useAuth`和`useApi` Hook
@@ -309,4 +380,5 @@ const order: OrderInfo = await tradeApi.createOrder({
 3. **类型安全**: 充分利用TypeScript类型定义
 4. **加载状态**: 使用loading状态提升用户体验
 5. **缓存策略**: 考虑使用React Query或SWR进行数据缓存
+6. **WebSocket**: 使用`useWebSocket`或`useMarketPrice` Hook管理实时数据
 
