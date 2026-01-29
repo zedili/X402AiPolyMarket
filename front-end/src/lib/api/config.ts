@@ -1,7 +1,8 @@
 // API 配置
 export const API_CONFIG = {
   // 基础URL - 根据环境变量配置
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888/api/v1',
+  // 默认使用相对路径，通过 Next.js 代理转发到后端，避免浏览器直接跨域
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1',
   
   // 请求超时时间（毫秒）
   TIMEOUT: 30000,
@@ -15,4 +16,5 @@ export const API_CONFIG = {
 // 环境检查
 export const isDevelopment = process.env.NODE_ENV === 'development';
 export const isProduction = process.env.NODE_ENV === 'production';
+
 

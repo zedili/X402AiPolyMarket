@@ -118,6 +118,10 @@ export interface MarketListRequest {
   page_size?: number;
   category?: string;
   status?: number;
+  // 仅管理员可用：是否只查询待审核市场
+  pending_only?: boolean;
+  // 调用方钱包地址，用于简单判断是否为管理员（与后端硬编码保持一致）
+  admin_address?: string;
   sort?: string; // volume, created_at, end_time
   order?: string; // asc, desc
   search?: string;
