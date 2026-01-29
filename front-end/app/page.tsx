@@ -1,30 +1,131 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import MarketCard from "@/components/MarketCard";
-import { MOCK_MARKETS } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Zap, Activity, Users, BrainCircuit } from "lucide-react";
+import { Search, Zap, Activity, Users, BrainCircuit, Loader2, Plus, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TypeItText from "@/components/TypeItText";
 import ParticlesBackground from "@/components/ParticlesBackground";
 import AnimatedStatCard from "@/components/AnimatedStatCard";
 import AnimatedMarketCard from "@/components/AnimatedMarketCard";
 import { useFadeInUp, useSlideIn } from "@/hooks/useScrollAnimation";
-import { useCallback } from "react";
+import { marketApi, aiApi } from "@/lib/api";
+import type { MarketListItem, AIPredictionResponse, MarketListResponse } from "@/lib/api/types";
+import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { motion } from "framer-motion";
+import FadeIn from "@/components/FadeIn";
+import StaggerChildren from "@/components/StaggerChildren";
 
 export default function Home() {
+  const { user } = useAuth();
+  const ADMIN_ADDRESS = '0xf0aC9747345c23B6ba451d9103F8C2785800998D';
+  const isAdmin = !!user && user.wallet_address?.toLowerCase() === ADMIN_ADDRESS.toLowerCase();
+
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [sort, setSort] = useState<string>('volume');
+  const [order, setOrder] = useState<string>('desc');
+  const [markets, setMarkets] = useState<MarketListItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [aiPredictions, setAiPredictions] = useState<Record<number, Partial<AIPredictionResponse>>>({});
+  const [aiLoadingStates, setAiLoadingStates] = useState<Record<number, boolean>>({});
+  const [categories, setCategories] = useState<string[]>(["ALL"]);
+  const [showParticles, setShowParticles] = useState(true);
+  const heroSectionRef = useRef<HTMLElement | null>(null);
 
-  const categories = ["ALL", "CRYPTO", "TECH", "STOCKS", "POLITICS"];
+  // 获取市场列表
+  useEffect(() => {
+    const fetchMarkets = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await marketApi.getMarketList({
+          page,
+          page_size: pageSize,
+          category: selectedCategory === "ALL" ? undefined : selectedCategory,
+          search: searchQuery || undefined,
+          sort,
+          order: order as 'asc' | 'desc',
+          status: 1, // 只获取已审核的市场
+        });
+        setMarkets(response.markets || []);
+        setTotal(response.total || 0);
+        
+        // 提取分类列表
+        const uniqueCategories = Array.from(new Set(response.markets?.map(m => m.category) || []));
+        setCategories(["ALL", ...uniqueCategories]);
+      } catch (err: any) {
+        console.error("Failed to fetch markets:", err);
+        setError(err?.message || "Failed to load markets");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredMarkets = MOCK_MARKETS.filter(market => {
-    const matchesCategory = selectedCategory === "ALL" || market.category === selectedCategory;
-    const matchesSearch = market.question.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+    fetchMarkets();
+  }, [selectedCategory, searchQuery, page, pageSize, sort, order]);
+
+  // 为每个市场获取AI预测
+  useEffect(() => {
+    markets.forEach((market) => {
+      // 如果已经有预测数据或正在加载，跳过
+      if (aiPredictions[market.id] || aiLoadingStates[market.id]) {
+        return;
+      }
+
+      // 如果市场已经有AI预测数据，直接使用
+      if (market.ai_prediction !== undefined && market.confidence !== undefined) {
+        setAiPredictions((prev) => ({
+          ...prev,
+          [market.id]: {
+            market_id: market.id,
+            prediction_value: market.ai_prediction,
+            confidence: market.confidence,
+            suggests: market.suggests,
+          },
+        }));
+        return;
+      }
+
+      // 否则发起AI预测请求
+      setAiLoadingStates((prev) => ({ ...prev, [market.id]: true }));
+      
+      aiApi.getPredictionStream(
+        market.id,
+        (partialData) => {
+          setAiPredictions((prev) => ({
+            ...prev,
+            [market.id]: { ...prev[market.id], ...partialData },
+          }));
+          setAiLoadingStates((prev) => ({ ...prev, [market.id]: false }));
+        },
+        (fullData) => {
+          setAiPredictions((prev) => ({
+            ...prev,
+            [market.id]: fullData,
+          }));
+          setAiLoadingStates((prev) => ({ ...prev, [market.id]: false }));
+        },
+        (err) => {
+          console.error(`Failed to get AI prediction for market ${market.id}:`, err);
+          setAiLoadingStates((prev) => ({ ...prev, [market.id]: false }));
+        }
+      );
+    });
+  }, [markets]);
+
+  // 注意：由于API已经处理了筛选和搜索，这里不需要再次过滤
+  // 但如果需要客户端二次过滤，可以保留这个逻辑
+  const filteredMarkets = useMemo(() => {
+    return markets;
+  }, [markets]);
 
   const stats = [
     { label: "TOTAL VOLUME", value: 12.8, suffix: "M", prefix: "$", icon: Activity, color: "text-blue-400" },
@@ -48,12 +149,41 @@ export default function Home() {
     }
   }, []);
 
+  // 监听滚动，控制粒子效果显示
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!heroSectionRef.current) return;
+      
+      const heroRect = heroSectionRef.current.getBoundingClientRect();
+      const heroBottom = heroRect.bottom;
+      
+      // 当英雄区块完全滚出视口时，隐藏粒子效果
+      if (heroBottom < 0) {
+        setShowParticles(false);
+      } else {
+        setShowParticles(true);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // 初始检查一次
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
     <>
       {/* 英雄区块 */}
-      <section className="relative py-20 md:py-32 overflow-hidden min-h-[600px] flex items-center">
-        {/* 粒子背景 */}
-        <ParticlesBackground className="absolute inset-0" />
+      <section 
+        ref={heroSectionRef as React.RefObject<HTMLElement>}
+        className="relative py-20 md:py-32 overflow-hidden min-h-[600px] flex items-center"
+        style={{ overflow: 'hidden' }}
+      >
+        {/* 粒子背景 - 相对于section绝对定位，溢出隐藏 */}
+        <ParticlesBackground className="absolute inset-0" visible={showParticles} />
         
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -152,64 +282,219 @@ export default function Home() {
       {/* 市场列表区 */}
       <section id="markets" className="py-20 bg-gradient-to-b from-background to-background/95">
         <div className="container space-y-10">
+          {/* 标题和操作按钮 */}
+          <FadeIn direction="down" delay={0.1}>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h2 className="text-3xl font-display font-bold">市场列表</h2>
+                <p className="text-muted-foreground mt-2">浏览所有预测市场</p>
+              </div>
+              <motion.div 
+                className="flex gap-2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Button asChild>
+                  <Link href="/markets/create">
+                    <Plus className="mr-2 h-4 w-4" />
+                    创建市场
+                  </Link>
+                </Button>
+                {isAdmin && (
+                  <Button variant="outline" asChild>
+                    <Link href="/admin/markets">
+                      <Shield className="mr-2 h-4 w-4" />
+                      审批中心
+                    </Link>
+                  </Button>
+                )}
+              </motion.div>
+            </div>
+          </FadeIn>
+
           {/* 筛选器 */}
           <div 
             ref={filtersRef as React.RefObject<HTMLDivElement>}
-            className="flex flex-col md:flex-row gap-6 justify-between items-center sticky top-20 z-30 py-4 bg-background/80 backdrop-blur-xl border-b border-border/30 -mx-4 px-4 md:mx-0 md:px-0 md:rounded-xl md:border"
+            className="flex flex-col gap-4 sticky top-20 z-30 py-4 bg-background/80 backdrop-blur-xl border-b border-border/30 -mx-4 px-4 md:mx-0 md:px-0 md:rounded-xl md:border"
           >
-            <div className="relative w-full md:w-96">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search markets..." 
-                className="pl-10 bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+            <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+              <div className="relative w-full md:w-96">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="搜索市场..." 
+                  className="pl-10 bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1); // 搜索时重置到第一页
+                  }}
+                />
+              </div>
+              
+              <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setPage(1); // 切换分类时重置到第一页
+                    }}
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap border",
+                      selectedCategory === category
+                        ? "bg-primary/10 text-primary border-primary/50 shadow-[0_0_15px_-5px_var(--color-primary)]"
+                        : "bg-background/50 text-muted-foreground border-border/50 hover:border-primary/30 hover:text-foreground"
+                    )}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </div>
-            
-            <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap border",
-                    selectedCategory === category
-                      ? "bg-primary/10 text-primary border-primary/50 shadow-[0_0_15px_-5px_var(--color-primary)]"
-                      : "bg-background/50 text-muted-foreground border-border/50 hover:border-primary/30 hover:text-foreground"
-                  )}
-                >
-                  {category}
-                </button>
-              ))}
+
+            {/* 排序 */}
+            <div className="flex gap-2 items-center flex-wrap">
+              <span className="text-sm text-muted-foreground">排序:</span>
+              <Button
+                variant={sort === 'volume' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setSort('volume')}
+              >
+                成交量
+              </Button>
+              <Button
+                variant={sort === 'created_at' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setSort('created_at')}
+              >
+                创建时间
+              </Button>
+              <Button
+                variant={sort === 'end_time' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setSort('end_time')}
+              >
+                结束时间
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setOrder(order === 'desc' ? 'asc' : 'desc')}
+              >
+                {order === 'desc' ? '↓' : '↑'}
+              </Button>
             </div>
           </div>
 
           {/* 市场卡片网格 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMarkets.map((market, index) => (
-              <AnimatedMarketCard
-                key={market.id}
-                market={market}
-                index={index}
-              />
-            ))}
-          </div>
-          
-          {filteredMarkets.length === 0 && (
-            <div className="text-center py-20 text-muted-foreground">
-              <p className="text-lg">No markets found matching your criteria.</p>
-              <Button 
-                variant="link" 
-                onClick={() => {
-                  setSelectedCategory("ALL");
-                  setSearchQuery("");
-                }}
-                className="mt-2 text-primary"
-              >
-                Clear filters
-              </Button>
-            </div>
+          {loading ? (
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                visible: {
+                  transition: {
+                    staggerChildren: 0.1,
+                  },
+                },
+              }}
+            >
+              {[...Array(6)].map((_, index) => (
+                <motion.div
+                  key={index}
+                  variants={{
+                    hidden: { opacity: 0, scale: 0.9 },
+                    visible: { opacity: 1, scale: 1 },
+                  }}
+                  className="h-64 bg-card/50 border border-border/50 rounded-xl animate-pulse"
+                />
+              ))}
+            </motion.div>
+          ) : error ? (
+            <FadeIn>
+              <div className="text-center py-20 text-muted-foreground">
+                <p className="text-lg text-destructive">{error}</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSelectedCategory("ALL");
+                    setSearchQuery("");
+                    setError(null);
+                  }}
+                  className="mt-4"
+                >
+                  Retry
+                </Button>
+              </div>
+            </FadeIn>
+          ) : (
+            <>
+              <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredMarkets.map((market, index) => {
+                  const aiPrediction = aiPredictions[market.id];
+                  const aiLoading = aiLoadingStates[market.id] || false;
+                  
+                  // 合并API返回的市场数据和AI预测数据
+                  const marketWithAI: MarketListItem = {
+                    ...market,
+                    ai_prediction: aiPrediction?.prediction_value ?? market.ai_prediction,
+                    confidence: aiPrediction?.confidence ?? market.confidence,
+                    suggests: aiPrediction?.suggests ?? market.suggests,
+                  };
+
+                  return (
+                    <AnimatedMarketCard
+                      key={market.id}
+                      market={marketWithAI}
+                      index={index}
+                      aiLoading={aiLoading}
+                    />
+                  );
+                })}
+              </StaggerChildren>
+              
+              {filteredMarkets.length === 0 && (
+                <div className="text-center py-20 text-muted-foreground">
+                  <p className="text-lg">No markets found matching your criteria.</p>
+                  <Button 
+                    variant="link" 
+                    onClick={() => {
+                      setSelectedCategory("ALL");
+                      setSearchQuery("");
+                      setPage(1);
+                    }}
+                    className="mt-2 text-primary"
+                  >
+                    Clear filters
+                  </Button>
+                </div>
+              )}
+
+              {/* 分页 */}
+              {total > pageSize && (
+                <div className="flex justify-center gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    disabled={page === 1}
+                    onClick={() => setPage(page - 1)}
+                  >
+                    上一页
+                  </Button>
+                  <span className="flex items-center px-4 text-sm text-muted-foreground">
+                    第 {page} 页，共 {Math.ceil(total / pageSize)} 页
+                  </span>
+                  <Button
+                    variant="outline"
+                    disabled={page >= Math.ceil(total / pageSize)}
+                    onClick={() => setPage(page + 1)}
+                  >
+                    下一页
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
