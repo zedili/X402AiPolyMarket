@@ -253,3 +253,4 @@ const user = AuthManager.getUser();
 4. **加载状态**: 使用loading状态提升用户体验
 5. **缓存策略**: 考虑使用React Query或SWR进行数据缓存
 
+
