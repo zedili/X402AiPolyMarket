@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Layout from "@/components/Layout";
 import { WalletProvider } from "@/providers/wallet-provider";
+import WalletAuthHandler from "@/components/WalletAuthHandler";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,9 +27,10 @@ export default function RootLayout({
       <body>
         <ErrorBoundary>
           <WalletProvider>
-            <ThemeProvider defaultTheme="light">
+            <ThemeProvider defaultTheme="light" switchable={true}>
               <TooltipProvider>
                 <Toaster />
+                <WalletAuthHandler />
                 <Layout>{children}</Layout>
               </TooltipProvider>
             </ThemeProvider>

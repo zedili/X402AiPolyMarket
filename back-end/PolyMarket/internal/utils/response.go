@@ -62,6 +62,11 @@ func Unauthorized(w http.ResponseWriter, msg string) {
 	Error(w, CodeUnauthorized, msg)
 }
 
+// Forbidden 禁止访问
+func Forbidden(w http.ResponseWriter, msg string) {
+	Error(w, CodeForbidden, msg)
+}
+
 // ServerError 服务器错误
 func ServerError(w http.ResponseWriter, msg string) {
 	Error(w, CodeServerError, msg)

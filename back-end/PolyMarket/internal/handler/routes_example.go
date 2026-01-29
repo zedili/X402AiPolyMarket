@@ -1,5 +1,9 @@
+//go:build ignore
+// +build ignore
+
 // 这是一个示例文件，展示如何集成 X402 中间件
-// 注意：实际的路由文件 routes.go 是自动生成的，需要手动修改或重新生成
+// 注意：该文件仅用于文档示例，已通过 build tag 排除在编译之外。
+// 实际生效的路由定义在 routes.go 中。
 
 package handler
 
@@ -16,7 +20,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	// 配置 X402 中间件
 	x402Config := middleware.X402Config{
 		Enabled:   true,
-		Amount:    0.001, // 0.001 SOL
+		Amount:    0.001,                         // 0.001 SOL
 		Recipient: "YourSolanaWalletAddressHere", // 需要替换为实际的收款地址
 		RPCURL:    "https://api.mainnet-beta.solana.com",
 	}
@@ -40,4 +44,3 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 	)
 }
-

@@ -54,6 +54,7 @@ func VerifySignature(message, signature, address string) (bool, error) {
 
 // IsValidAddress 验证以太坊地址格式
 func IsValidAddress(address string) bool {
+	address = strings.TrimSpace(address)
 	return common.IsHexAddress(address)
 }
 
@@ -64,4 +65,3 @@ func NormalizeAddress(address string) string {
 	}
 	return strings.ToLower(address)
 }
-

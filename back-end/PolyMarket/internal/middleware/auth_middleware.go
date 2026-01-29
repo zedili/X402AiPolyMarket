@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"context"
-	"net/http"
-	"strings"
-
 	"X402AiPolyMarket/PolyMarket/internal/config"
 	"X402AiPolyMarket/PolyMarket/internal/utils"
+	"context"
+	"encoding/json"
+	"net/http"
+	"strings"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -65,14 +65,30 @@ func (m *AuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 }
 
 // GetUserID 从 context 中获取用户 ID
-func GetUserID(ctx context.Context) (uint64, bool) {
-	userID, ok := ctx.Value(UserIDKey).(uint64)
-	return userID, ok
+func GetUserID(ctx context.Context) (int64, bool) {
+	v := ctx.Value("user_id")
+	if v == nil {
+		return 0, false
+	}
+
+	switch id := v.(type) {
+	case json.Number:
+		uid, err := id.Int64()
+		if err != nil {
+			return 0, false
+		}
+		return uid, true
+	case int64:
+		return id, true
+	case float64:
+		return int64(id), true
+	default:
+		return 0, false
+	}
 }
 
 // GetWalletAddress 从 context 中获取钱包地址
 func GetWalletAddress(ctx context.Context) (string, bool) {
-	address, ok := ctx.Value(WalletAddressKey).(string)
-	return address, ok
+	addr, ok := ctx.Value("wallet_address").(string)
+	return addr, ok
 }
-
