@@ -7,13 +7,15 @@ import { Brain, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { WalletLogin } from "@/components/WalletLogin";
+import PageTransition from "@/components/PageTransition";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { label: "MARKETS", href: "/markets" },
     { label: "PORTFOLIO", href: "/portfolio" },
     { label: "LEADERBOARD", href: "/leaderboard" },
     { label: "WALLET", href: "/wallet" },
@@ -71,12 +73,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex">
+            <div className="hidden md:flex items-center gap-2">
+              <ThemeToggle />
               <ConnectButton
                 chainStatus="icon"
                 showBalance={false}
                 accountStatus="address"
               />
+              <WalletLogin />
             </div>
             <button
               className="md:hidden p-2 text-muted-foreground hover:text-foreground"
@@ -120,7 +124,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <main className="relative z-10 pt-16 min-h-[calc(100vh-64px)] flex flex-col">
-        {children}
+        <PageTransition>{children}</PageTransition>
       </main>
 
       {/* Footer */}
