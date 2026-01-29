@@ -118,3 +118,4 @@ function TradeCard({ trade }: { trade: TradeInfo }) {
   );
 }
 
+

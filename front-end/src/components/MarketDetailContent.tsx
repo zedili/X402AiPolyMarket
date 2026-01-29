@@ -139,7 +139,25 @@ export function MarketDetailContent({ market }: MarketDetailContentProps) {
         </TabsContent>
 
         <TabsContent value="trade">
-          <CreateOrderForm marketId={market.id} />
+          {market.status !== 1 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-yellow-600">
+                  <AlertCircle className="h-4 w-4" />
+                  市场不可交易
+                </CardTitle>
+                <CardDescription>
+                  当前市场状态为
+                  {market.status === 0 && '「待开始」'}
+                  {market.status === 2 && '「已结束」'}
+                  {market.status === 3 && '「已结算」'}
+                  ，暂不支持创建订单。
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          ) : (
+            <CreateOrderForm marketId={market.id} />
+          )}
         </TabsContent>
 
         <TabsContent value="ai">
@@ -199,4 +217,5 @@ export function MarketDetailContent({ market }: MarketDetailContentProps) {
     </div>
   );
 }
+
 

@@ -147,3 +147,4 @@ function TransactionCard({ transaction }: { transaction: WalletTransaction }) {
   );
 }
 
+

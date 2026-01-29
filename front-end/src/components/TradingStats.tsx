@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useApi } from '@/hooks/useApi';
 import { tradeApi } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, TrendingUp, Package, DollarSign, Target } from 'lucide-react';
 
 export function TradingStats() {
-  const { data, loading, error } = useApi(tradeApi.getTradingStats);
+  const { data, loading, error, execute } = useApi(tradeApi.getTradingStats);
+
+  // 组件挂载或切换到统计页签时触发一次统计接口请求
+  useEffect(() => {
+    execute();
+  }, [execute]);
 
   if (loading) {
     return (
@@ -109,4 +115,5 @@ export function TradingStats() {
     </div>
   );
 }
+
 

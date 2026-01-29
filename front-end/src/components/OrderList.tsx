@@ -43,45 +43,9 @@ export function OrderList() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-6 w-3/4" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-20 w-full" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>{error.message}</AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (!data || data.orders.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-10 text-center text-muted-foreground">
-          暂无订单
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      {/* 筛选 */}
+      {/* 筛选：始终展示 */}
       <div className="flex gap-2">
         <Select
           value={status?.toString() || 'all'}
@@ -114,30 +78,59 @@ export function OrderList() {
         </Select>
       </div>
 
-      {/* 订单列表 */}
-      <div className="space-y-4">
-        {data.orders.map((order) => (
-          <OrderCard key={order.id} order={order} onCancel={handleCancel} />
-        ))}
-      </div>
-
-      {/* 分页 */}
-      {data.total > pageSize && (
-        <div className="flex justify-center gap-2">
-          <Button variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>
-            上一页
-          </Button>
-          <span className="flex items-center px-4 text-sm text-muted-foreground">
-            第 {page} 页，共 {Math.ceil(data.total / pageSize)} 页
-          </span>
-          <Button
-            variant="outline"
-            disabled={page >= Math.ceil(data.total / pageSize)}
-            onClick={() => setPage(page + 1)}
-          >
-            下一页
-          </Button>
+      {/* 列表区域：根据状态切换，但不影响上方筛选 */}
+      {loading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
+      ) : error ? (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
+      ) : !data || data.orders.length === 0 ? (
+        <Card>
+          <CardContent className="py-10 text-center text-muted-foreground">
+            暂无订单
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* 订单列表 */}
+          <div className="space-y-4">
+            {data.orders.map((order) => (
+              <OrderCard key={order.id} order={order} onCancel={handleCancel} />
+            ))}
+          </div>
+
+          {/* 分页 */}
+          {data.total > pageSize && (
+            <div className="flex justify-center gap-2">
+              <Button variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>
+                上一页
+              </Button>
+              <span className="flex items-center px-4 text-sm text-muted-foreground">
+                第 {page} 页，共 {Math.ceil(data.total / pageSize)} 页
+              </span>
+              <Button
+                variant="outline"
+                disabled={page >= Math.ceil(data.total / pageSize)}
+                onClick={() => setPage(page + 1)}
+              >
+                下一页
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -213,4 +206,5 @@ function OrderCard({
     </Card>
   );
 }
+
 
