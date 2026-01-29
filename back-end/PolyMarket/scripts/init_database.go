@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	rootDSN := "root:root@tcp(127.0.0.1:3306)/?charset=utf8mb4&parseTime=True&loc=Local&multiStatements=true"
+	// 与 etc/polymarket-api.yaml 中的 MySQL 配置保持一致：root 用户无密码
+	rootDSN := "root:@tcp(127.0.0.1:3306)/?charset=utf8mb4&parseTime=True&loc=Local&multiStatements=true"
 	rootDB, err := sql.Open("mysql", rootDSN)
 	checkErr(err, "连接 MySQL 失败")
 	defer rootDB.Close()
@@ -31,7 +32,7 @@ func main() {
 	}
 
 	// Step 2: 连接 polymarket 数据库
-	dbDSN := "root:root@tcp(127.0.0.1:3306)/polymarket?charset=utf8mb4&parseTime=True&loc=Local&multiStatements=true"
+	dbDSN := "root:@tcp(127.0.0.1:3306)/polymarket?charset=utf8mb4&parseTime=True&loc=Local&multiStatements=true"
 	db, err := sql.Open("mysql", dbDSN)
 	checkErr(err, "连接 polymarket 数据库失败")
 	defer db.Close()
@@ -58,7 +59,14 @@ func main() {
 		fmt.Println("⚠️ 表 markets / market_categories 已存在，跳过 module2_init_db.sql")
 	}
 
-	// Step 6: 如果 market_categories 无数据，插入默认分类
+	// Step 6: 初始化 module3（交易模块：orders, trades, positions 表）
+	if !tableExists(db, "orders") || !tableExists(db, "trades") || !tableExists(db, "positions") {
+		execSQLFile(db, "module3_init_db.sql")
+	} else {
+		fmt.Println("⚠️ 表 orders / trades / positions 已存在，跳过 module3_init_db.sql")
+	}
+
+	// Step 7: 如果 market_categories 无数据，插入默认分类
 	if tableExists(db, "market_categories") && !tableHasData(db, "market_categories") {
 		fmt.Println("📥 插入默认市场分类...")
 		_, err := db.Exec(`

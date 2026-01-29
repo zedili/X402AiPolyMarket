@@ -35,7 +35,7 @@ MySQL:
   Host: 127.0.0.1
   Port: 3306
   User: root
-  Password: root
+  Password: ""
   Database: polymarket
   MaxOpenConns: 100
   MaxIdleConns: 10

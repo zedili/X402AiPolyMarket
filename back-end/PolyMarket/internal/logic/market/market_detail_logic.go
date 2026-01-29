@@ -2,6 +2,7 @@ package market
 
 import (
 	"context"
+	"time"
 
 	"X402AiPolyMarket/PolyMarket/internal/model"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
@@ -37,6 +38,18 @@ func (l *MarketDetailLogic) GetMarketDetail(marketID uint64, userAddress *string
 		return nil, utils.NewError(utils.CodeServerError, "Failed to query market")
 	}
 
+	// 基于时间和审核状态的自动状态迁移（轻量级，无需额外定时任务）：
+	// - 已审核 & 仍是 Pending 且当前时间 >= start_time，则视为 Active
+	// - 任意状态下，如果当前时间 > end_time 且尚未结算，则视为 Ended
+	now := time.Now()
+	derivedStatus := market.Status
+	if market.AuditStatus == model.AuditStatusApproved && market.Status == model.MarketStatusPending && !now.Before(market.StartTime) {
+		derivedStatus = model.MarketStatusActive
+	}
+	if derivedStatus == model.MarketStatusActive && now.After(market.EndTime) && market.Status != model.MarketStatusSettled {
+		derivedStatus = model.MarketStatusEnded
+	}
+
 	// 构建响应
 	resp := &types.MarketDetailResponse{
 		ID:               market.ID,
@@ -58,7 +71,7 @@ func (l *MarketDetailLogic) GetMarketDetail(marketID uint64, userAddress *string
 		StartTime:        market.StartTime,
 		EndTime:          market.EndTime,
 		SettlementTime:   market.SettlementTime,
-		Status:           market.Status,
+		Status:           derivedStatus,
 		Result:           market.Result,
 		AuditStatus:      market.AuditStatus,
 		IsHot:            market.IsHot,

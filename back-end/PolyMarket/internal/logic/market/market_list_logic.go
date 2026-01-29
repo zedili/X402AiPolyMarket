@@ -2,6 +2,7 @@ package market
 
 import (
 	"context"
+	"strings"
 
 	"X402AiPolyMarket/PolyMarket/internal/model"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
@@ -40,8 +41,22 @@ func (l *MarketListLogic) GetMarketList(req *types.MarketListRequest) (*types.Ma
 	// 构建查询
 	query := model.DB.Model(&model.Market{})
 
-	// 只显示已审核通过的市场
-	query = query.Where("audit_status = ?", model.AuditStatusApproved)
+	// 管理员地址（临时硬编码）
+	const adminAddress = "0xf0aC9747345c23B6ba451d9103F8C2785800998D"
+
+	isAdmin := false
+	if req.AdminAddress != nil && *req.AdminAddress != "" {
+		isAdmin = strings.EqualFold(*req.AdminAddress, adminAddress)
+	}
+
+	// 审核状态过滤：
+	// - 普通用户：只看已审核通过
+	// - 管理员 + pending_only=true：只看待审核
+	if isAdmin && req.PendingOnly != nil && *req.PendingOnly {
+		query = query.Where("audit_status = ?", model.AuditStatusPending)
+	} else {
+		query = query.Where("audit_status = ?", model.AuditStatusApproved)
+	}
 
 	// 分类筛选
 	if req.Category != nil && *req.Category != "" {

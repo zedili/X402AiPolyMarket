@@ -58,12 +58,24 @@ func MarketListHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		if search := query.Get("search"); search != "" {
 			req.Search = &search
 		}
-		
+
 		// IsHot
 		if isHotStr := query.Get("is_hot"); isHotStr != "" {
 			if isHot, err := strconv.ParseBool(isHotStr); err == nil {
 				req.IsHot = &isHot
 			}
+		}
+
+		// PendingOnly
+		if pendingOnlyStr := query.Get("pending_only"); pendingOnlyStr != "" {
+			if pendingOnly, err := strconv.ParseBool(pendingOnlyStr); err == nil {
+				req.PendingOnly = &pendingOnly
+			}
+		}
+
+		// AdminAddress
+		if adminAddr := query.Get("admin_address"); adminAddr != "" {
+			req.AdminAddress = &adminAddr
 		}
 
 		l := market.NewMarketListLogic(r.Context(), svcCtx)

@@ -26,6 +26,10 @@ type MarketListRequest struct {
 	PageSize int     `json:"page_size" form:"page_size"`
 	Category *string `json:"category,omitempty" form:"category"`
 	Status   *uint8  `json:"status,omitempty" form:"status"`
+	// 是否只查询待审核市场（仅管理员地址生效）
+	PendingOnly *bool   `json:"pending_only,omitempty" form:"pending_only"`
+	// 调用方地址，用于简单判断是否为管理员（临时方案）
+	AdminAddress *string `json:"admin_address,omitempty" form:"admin_address"`
 	Sort     *string `json:"sort,omitempty" form:"sort"`         // volume, created_at, end_time
 	Order    *string `json:"order,omitempty" form:"order"`       // asc, desc
 	Search   *string `json:"search,omitempty" form:"search"`

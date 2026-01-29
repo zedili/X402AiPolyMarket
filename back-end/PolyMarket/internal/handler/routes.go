@@ -30,15 +30,37 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/auth/nonce",
 				Handler: auth.NonceHandler(serverCtx),
 			},
+			// CORS 预检请求支持
+			{
+				Method: http.MethodOptions,
+				Path:   "/auth/nonce",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				},
+			},
 			{
 				Method:  http.MethodPost,
 				Path:    "/auth/login",
 				Handler: auth.LoginHandler(serverCtx),
 			},
 			{
+				Method: http.MethodOptions,
+				Path:   "/auth/login",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				},
+			},
+			{
 				Method:  http.MethodPost,
 				Path:    "/auth/refresh",
 				Handler: auth.RefreshHandler(serverCtx),
+			},
+			{
+				Method: http.MethodOptions,
+				Path:   "/auth/refresh",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				},
 			},
 			{
 				Method:  http.MethodGet,
@@ -65,6 +87,15 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodGet,
 				Path:    "/market/hot",
 				Handler: market.HotMarketsHandler(serverCtx),
+			},
+			// CORS 预检请求 - 交易模块（需要在无需 JWT 的路由组里单独声明）
+			// 这样浏览器的 OPTIONS 预检请求不会被 JWT 拦截，从而能够正确返回 CORS 头
+			{
+				Method: http.MethodOptions,
+				Path:   "/trade/positions",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				},
 			},
 		},
 		rest.WithPrefix("/api/v1"),
@@ -93,6 +124,22 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPost,
 				Path:    "/market/create",
 				Handler: market.CreateMarketHandler(serverCtx),
+			},
+			// 管理后台 - 市场审核与结算（仅管理员地址可用，逻辑中校验）
+			{
+				Method:  http.MethodPost,
+				Path:    "/admin/market/:id/approve",
+				Handler: market.AdminApproveMarketHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/admin/market/:id/reject",
+				Handler: market.AdminRejectMarketHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/admin/market/:id/settle",
+				Handler: market.AdminSettleMarketHandler(serverCtx),
 			},
 			// 交易模块 - 订单管理
 			{

@@ -24,7 +24,7 @@ ADD INDEX   `idx_created_at` (`created_at`);
 CREATE TABLE   `auth_nonces` (
                                  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
                                  `wallet_address` VARCHAR(42) NOT NULL COMMENT '钱包地址',
-                                 `nonce` VARCHAR(64) NOT NULL COMMENT '随机数',
+                                 `nonce` VARCHAR(255) NOT NULL COMMENT '随机数/登录消息',
                                  `expires_at` TIMESTAMP NOT NULL COMMENT '过期时间',
                                  `used` TINYINT UNSIGNED DEFAULT 0 COMMENT '是否已使用: 0-未使用 1-已使用',
                                  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

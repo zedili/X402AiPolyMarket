@@ -12,6 +12,7 @@ import (
 
 	"X402AiPolyMarket/PolyMarket/internal/config"
 	"X402AiPolyMarket/PolyMarket/internal/handler"
+	"X402AiPolyMarket/PolyMarket/internal/middleware"
 	"X402AiPolyMarket/PolyMarket/internal/model"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
 
@@ -31,6 +32,9 @@ func main() {
 	// 1️⃣ 创建 HTTP server
 	server := rest.MustNewServer(c.RestConf)
 	defer server.Stop()
+
+	// 全局中间件：CORS 处理（保证前端可以正常跨域访问）
+	server.Use(middleware.NewCorsMiddleware().Handle)
 
 	// 3️⃣ 初始化 service context
 	ctx := svc.NewServiceContext(c)
