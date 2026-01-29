@@ -13,9 +13,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { label: "MARKETS", href: "/" },
+    { label: "MARKETS", href: "/markets" },
     { label: "PORTFOLIO", href: "/portfolio" },
     { label: "LEADERBOARD", href: "/leaderboard" },
+    { label: "WALLET", href: "/wallet" },
+    { label: "PROFILE", href: "/profile" },
   ];
 
   return (
