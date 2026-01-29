@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, User, Mail, FileText, Save } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
@@ -23,6 +23,15 @@ export default function ProfilePage() {
     bio: '',
     avatar_url: '',
   });
+
+  // 组件挂载时自动加载用户资料
+  useEffect(() => {
+    if (isAuthenticated) {
+      execute();
+    }
+    // execute 函数是稳定的，不需要加入依赖数组
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   const handleEdit = () => {
     if (profile) {
@@ -225,4 +234,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 
