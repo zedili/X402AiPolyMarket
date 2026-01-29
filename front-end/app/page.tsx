@@ -230,7 +230,7 @@ export default function Home() {
             >
               <Button 
                 size="lg" 
-                className="w-full sm:w-auto text-lg h-12 px-8 bg-primary hover:bg-primary/90 shadow-[0_0_20px_-5px_var(--color-primary)] transition-all hover:scale-105"
+                className="relative w-full sm:w-auto text-lg h-12 px-8 bg-primary hover:bg-primary/90 shadow-[0_0_20px_-5px_var(--color-primary)] transition-all hover:scale-105"
                 onClick={() => scrollTo("markets")}
               >
                 <Zap className="mr-2 h-5 w-5" />

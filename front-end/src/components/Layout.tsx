@@ -80,7 +80,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 showBalance={false}
                 accountStatus="address"
               />
-              <WalletLogin />
+              {/* <WalletLogin /> */}
             </div>
             <button
               className="md:hidden p-2 text-muted-foreground hover:text-foreground"
