@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useApi } from '@/hooks/useApi';
 import { marketApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +15,11 @@ import { cn } from '@/lib/utils';
 import type { MarketListItem } from '@/lib/api/types';
 
 export default function MarketsPage() {
+  const { user } = useAuth();
+  const ADMIN_ADDRESS = '0xf0aC9747345c23B6ba451d9103F8C2785800998D';
+  const isAdmin =
+    !!user && user.wallet_address?.toLowerCase() === ADMIN_ADDRESS.toLowerCase();
+
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [category, setCategory] = useState<string | undefined>();
@@ -62,11 +68,23 @@ export default function MarketsPage() {
 
   return (
     <div className="container py-8 space-y-6">
-      {/* 标题和筛选 */}
+      {/* 标题、操作和筛选 */}
       <div className="space-y-4">
-        <div>
-          <h1 className="text-3xl font-bold">市场列表</h1>
-          <p className="text-muted-foreground mt-2">浏览所有预测市场</p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">市场列表</h1>
+            <p className="text-muted-foreground mt-2">浏览所有预测市场</p>
+          </div>
+          <div className="flex gap-2">
+            <Button asChild>
+              <Link href="/markets/create">创建市场</Link>
+            </Button>
+            {isAdmin && (
+              <Button variant="outline" asChild>
+                <Link href="/admin/markets">审批中心</Link>
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* 搜索和筛选 */}
@@ -240,4 +258,5 @@ function MarketCard({ market }: { market: MarketListItem }) {
     </Link>
   );
 }
+
 

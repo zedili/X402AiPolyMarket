@@ -16,11 +16,12 @@ export default function MarketDetailPage() {
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const marketId = id ? parseInt(id, 10) : 0;
 
-  const { data: market, loading, error, execute } = useApi(() => marketApi.getMarketDetail(marketId));
+  // 传入稳定的 API 函数，把参数通过 execute 传入，避免每次渲染都创建新函数导致 useEffect 反复触发
+  const { data: market, loading, error, execute } = useApi(marketApi.getMarketDetail);
 
   useEffect(() => {
     if (marketId) {
-      execute();
+      execute(marketId);
     }
   }, [execute, marketId]);
 
@@ -42,7 +43,7 @@ export default function MarketDetailPage() {
             <CardDescription>{error?.message || '未找到该市场'}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => router.push('/markets')}>
+            <Button onClick={() => router.push('/#markets')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               返回市场列表
             </Button>
@@ -54,7 +55,7 @@ export default function MarketDetailPage() {
 
   return (
     <div className="container py-8 space-y-6">
-      <Button variant="ghost" onClick={() => router.push('/markets')}>
+      <Button variant="ghost" onClick={() => router.push('/#markets')}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         返回
       </Button>
