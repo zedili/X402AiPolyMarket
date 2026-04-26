@@ -4,6 +4,8 @@ import { API_CONFIG } from './config';
 import { AuthManager } from './auth';
 import type { ApiResponse } from './types';
 import { ErrorCode } from './types';
+import { ApiError } from './errors';
+
 
 // 创建 axios 实例
 const createAxiosInstance = (): AxiosInstance => {
@@ -122,33 +124,7 @@ const createAxiosInstance = (): AxiosInstance => {
   return instance;
 };
 
-// API错误类
-export class ApiError extends Error {
-  code: ErrorCode | number;
-  data?: any;
 
-  constructor(code: ErrorCode | number, message: string, data?: any) {
-    super(message);
-    this.name = 'ApiError';
-    this.code = code;
-    this.data = data;
-  }
-
-  // 是否为认证错误
-  isAuthError(): boolean {
-    return this.code === ErrorCode.UNAUTHORIZED || this.code === ErrorCode.FORBIDDEN;
-  }
-
-  // 是否为参数错误
-  isParamError(): boolean {
-    return this.code === ErrorCode.PARAM_ERROR;
-  }
-
-  // 是否为服务器错误
-  isServerError(): boolean {
-    return this.code === ErrorCode.SERVER_ERROR;
-  }
-}
 
 // 导出axios实例
 export const apiClient = createAxiosInstance();

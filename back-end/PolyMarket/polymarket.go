@@ -14,6 +14,7 @@ import (
 	"X402AiPolyMarket/PolyMarket/internal/handler"
 	"X402AiPolyMarket/PolyMarket/internal/middleware"
 	"X402AiPolyMarket/PolyMarket/internal/model"
+	"X402AiPolyMarket/PolyMarket/internal/scheduler"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
@@ -21,9 +22,8 @@ import (
 	"github.com/zeromicro/go-zero/rest"
 )
 
-var configFile = flag.String("f", "etc/polymarket-api.yaml", "the config file")
-
 func main() {
+	configFile := flag.String("f", "etc/polymarket-api.yaml", "the config file")
 	flag.Parse()
 
 	var c config.Config
@@ -42,7 +42,12 @@ func main() {
 	// 4️⃣ 再注册 handlers（路由）
 	handler.RegisterHandlers(server, ctx)
 
-	// 5️⃣ 优雅关闭
+	// 5️⃣  启动定时器
+	if err := scheduler.NewMarketSyncScheduler().Start(); err != nil {
+		logx.Errorf("启动市场同步任务失败: %v", err)
+	}
+
+	// 6️⃣ 优雅关闭
 	go func() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)

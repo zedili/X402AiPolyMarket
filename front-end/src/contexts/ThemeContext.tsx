@@ -25,9 +25,13 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (switchable) {
+      // 检查 window 是否已定义（即是否在浏览器环境中运行）
+    if (typeof window !== "undefined") {
       const stored = localStorage.getItem("theme");
       return (stored as Theme) || defaultTheme;
-    }
+    } 
+    // 在 ssr 期间返回默认主题
+  }
     return defaultTheme;
   });
 

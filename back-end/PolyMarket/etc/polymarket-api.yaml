@@ -32,10 +32,10 @@ Log:
 
 # MySQL 配置
 MySQL:
-  Host: 127.0.0.1
+  Host: 192.168.8.120
   Port: 3306
   User: root
-  Password: ""
+  Password: "hj@123456"
   Database: polymarket
   MaxOpenConns: 100
   MaxIdleConns: 10
@@ -43,8 +43,8 @@ MySQL:
 
 # Redis 配置
 Redis:
-  Host: 127.0.0.1:6379
-  Password: ""
+  Host: 192.168.8.120:6379
+  Password: "hj@123456"
   DB: 0
   PoolSize: 10
 

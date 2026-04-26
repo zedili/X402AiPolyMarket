@@ -46,6 +46,7 @@ export default function Home() {
       try {
         setLoading(true);
         setError(null);
+        
         const response = await marketApi.getMarketList({
           page,
           page_size: pageSize,
@@ -295,12 +296,15 @@ export default function Home() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
               >
+                { /*
                 <Button asChild>
                   <Link href="/markets/create">
                     <Plus className="mr-2 h-4 w-4" />
                     创建市场
                   </Link>
                 </Button>
+                */
+                }
                 {isAdmin && (
                   <Button variant="outline" asChild>
                     <Link href="/admin/markets">

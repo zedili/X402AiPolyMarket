@@ -9,6 +9,7 @@ import (
 // Market 市场模型
 type Market struct {
 	ID          uint64  `gorm:"primaryKey;autoIncrement" json:"id"`
+	MarketId    string  `gorm:"column:market_id;type:varchar(255);uniqueIndex:uk_market_id;not null" json:"market_id"`
 	Question    string  `gorm:"type:text;not null" json:"question"`
 	Description *string `gorm:"type:text" json:"description,omitempty"`
 	Category    string  `gorm:"type:varchar(50);index:idx_category;not null" json:"category"`
@@ -89,15 +90,15 @@ func (MarketFavorite) TableName() string {
 
 // MarketComment 市场评论模型
 type MarketComment struct {
-	ID          uint64     `gorm:"primaryKey;autoIncrement" json:"id"`
-	MarketID    uint64     `gorm:"type:bigint unsigned;index:idx_market;not null" json:"market_id"`
-	UserAddress string     `gorm:"type:varchar(42);index:idx_user;not null" json:"user_address"`
-	Content     string     `gorm:"type:text;not null" json:"content"`
-	ParentID    *uint64    `gorm:"type:bigint unsigned;index:idx_parent" json:"parent_id,omitempty"`
-	LikeCount   uint       `gorm:"type:int unsigned;default:0" json:"like_count"`
-	IsDeleted   bool       `gorm:"type:boolean;default:false" json:"is_deleted"`
-	CreatedAt   time.Time  `gorm:"type:timestamp;default:CURRENT_TIMESTAMP;index:idx_created_at" json:"created_at"`
-	UpdatedAt   time.Time  `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"updated_at"`
+	ID          uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	MarketID    uint64    `gorm:"type:bigint unsigned;index:idx_market;not null" json:"market_id"`
+	UserAddress string    `gorm:"type:varchar(42);index:idx_user;not null" json:"user_address"`
+	Content     string    `gorm:"type:text;not null" json:"content"`
+	ParentID    *uint64   `gorm:"type:bigint unsigned;index:idx_parent" json:"parent_id,omitempty"`
+	LikeCount   uint      `gorm:"type:int unsigned;default:0" json:"like_count"`
+	IsDeleted   bool      `gorm:"type:boolean;default:false" json:"is_deleted"`
+	CreatedAt   time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP;index:idx_created_at" json:"created_at"`
+	UpdatedAt   time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
 func (MarketComment) TableName() string {
@@ -150,11 +151,11 @@ func (j *JSONMap) Scan(value interface{}) error {
 
 // 市场状态常量
 const (
-	MarketStatusPending    uint8 = 0 // 待开始
-	MarketStatusActive     uint8 = 1 // 进行中
-	MarketStatusEnded      uint8 = 2 // 已结束
-	MarketStatusSettled    uint8 = 3 // 已结算
-	MarketStatusCancelled  uint8 = 4 // 已取消
+	MarketStatusPending   uint8 = 0 // 待开始
+	MarketStatusActive    uint8 = 1 // 进行中
+	MarketStatusEnded     uint8 = 2 // 已结束
+	MarketStatusSettled   uint8 = 3 // 已结算
+	MarketStatusCancelled uint8 = 4 // 已取消
 )
 
 // 审核状态常量
@@ -169,4 +170,3 @@ const (
 	MarketResultNo  uint8 = 0 // NO
 	MarketResultYes uint8 = 1 // YES
 )
-
