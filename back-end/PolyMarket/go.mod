@@ -4,9 +4,10 @@ go 1.25.1
 
 require (
 	github.com/ethereum/go-ethereum v1.16.7
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/golang-jwt/jwt/v5 v5.3.0
-	github.com/gorilla/mux v1.8.1
 	github.com/redis/go-redis/v9 v9.17.2
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/zeromicro/go-zero v1.9.4
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.1
@@ -23,7 +24,6 @@ require (
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-sql-driver/mysql v1.9.3 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grafana/pyroscope-go v1.2.7 // indirect

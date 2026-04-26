@@ -56,7 +56,7 @@ func (u *User) GetStats() UserStats {
 type AuthNonce struct {
 	ID            uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
 	WalletAddress string    `gorm:"type:varchar(42);index:idx_wallet_address;not null" json:"wallet_address"`
-	Nonce         string    `gorm:"type:varchar(64);uniqueIndex:uk_nonce;not null" json:"nonce"`
+	Nonce         string    `gorm:"type:varchar(255);uniqueIndex:uk_nonce;not null" json:"nonce"`
 	ExpiresAt     time.Time `gorm:"type:timestamp;index:idx_expires_at;not null" json:"expires_at"`
 	Used          uint8     `gorm:"type:tinyint unsigned;default:0" json:"used"`
 	CreatedAt     time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`

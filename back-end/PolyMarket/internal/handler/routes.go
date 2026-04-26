@@ -6,13 +6,18 @@ package handler
 import (
 	"net/http"
 
+	"X402AiPolyMarket/PolyMarket/internal/handler/auth"
 	"X402AiPolyMarket/PolyMarket/internal/handler/health"
+	"X402AiPolyMarket/PolyMarket/internal/handler/market"
+	"X402AiPolyMarket/PolyMarket/internal/handler/trade"
+	"X402AiPolyMarket/PolyMarket/internal/handler/user"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
+	// 公开路由（无需认证）
 	server.AddRoutes(
 		[]rest.Route{
 			{
@@ -20,9 +25,168 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/health",
 				Handler: health.HealthHandler(serverCtx),
 			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/auth/nonce",
+				Handler: auth.NonceHandler(serverCtx),
+			},
+			// CORS 预检请求支持
+			{
+				Method: http.MethodOptions,
+				Path:   "/auth/nonce",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				},
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/auth/login",
+				Handler: auth.LoginHandler(serverCtx),
+			},
+			{
+				Method: http.MethodOptions,
+				Path:   "/auth/login",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				},
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/auth/refresh",
+				Handler: auth.RefreshHandler(serverCtx),
+			},
+			{
+				Method: http.MethodOptions,
+				Path:   "/auth/refresh",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				},
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/user/:address",
+				Handler: user.GetPublicUserHandler(serverCtx),
+			},
+			// 市场相关公开接口
+			{
+				Method:  http.MethodGet,
+				Path:    "/market/list",
+				Handler: market.MarketListHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/market/:id",
+				Handler: market.MarketDetailHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/market/categories",
+				Handler: market.CategoriesHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/market/hot",
+				Handler: market.HotMarketsHandler(serverCtx),
+			},
+			// CORS 预检请求 - 交易模块（需要在无需 JWT 的路由组里单独声明）
+			// 这样浏览器的 OPTIONS 预检请求不会被 JWT 拦截，从而能够正确返回 CORS 头
+			{
+				Method: http.MethodOptions,
+				Path:   "/trade/positions",
+				Handler: func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				},
+			},
 		},
 		rest.WithPrefix("/api/v1"),
 	)
 
-
+	// 需要认证的路由
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/auth/logout",
+				Handler: auth.LogoutHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/user/profile",
+				Handler: user.GetProfileHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPut,
+				Path:    "/user/profile",
+				Handler: user.UpdateProfileHandler(serverCtx),
+			},
+			// 市场相关需要认证的接口
+			{
+				Method:  http.MethodPost,
+				Path:    "/market/create",
+				Handler: market.CreateMarketHandler(serverCtx),
+			},
+			// 管理后台 - 市场审核与结算（仅管理员地址可用，逻辑中校验）
+			{
+				Method:  http.MethodPost,
+				Path:    "/admin/market/:id/approve",
+				Handler: market.AdminApproveMarketHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/admin/market/:id/reject",
+				Handler: market.AdminRejectMarketHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/admin/market/:id/settle",
+				Handler: market.AdminSettleMarketHandler(serverCtx),
+			},
+			// 交易模块 - 订单管理
+			{
+				Method:  http.MethodPost,
+				Path:    "/trade/order",
+				Handler: trade.CreateOrderHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/orders",
+				Handler: trade.OrderListHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/order/:id",
+				Handler: trade.OrderDetailHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/trade/order/:id/cancel",
+				Handler: trade.CancelOrderHandler(serverCtx),
+			},
+			// 交易模块 - 交易历史
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/history",
+				Handler: trade.TradeHistoryHandler(serverCtx),
+			},
+			// 交易模块 - 持仓管理
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/positions",
+				Handler: trade.PositionListHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/position/:id",
+				Handler: trade.PositionDetailHandler(serverCtx),
+			},
+			// 交易模块 - 统计
+			{
+				Method:  http.MethodGet,
+				Path:    "/trade/stats",
+				Handler: trade.TradingStatsHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+	)
 }
