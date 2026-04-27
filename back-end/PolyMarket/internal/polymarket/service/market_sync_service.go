@@ -27,6 +27,7 @@ func NewMarketSyncService() *MarketSyncService {
 // SyncMarkets 同步市场数据到现有的 markets 表
 func (s *MarketSyncService) SyncMarkets(ctx context.Context) error {
 	logx.Info("开始同步 Polymarket 市场数据...")
+	return nil
 	startTime := time.Now()
 
 	markets, err := s.gammaClient.GetMarkets(nil)

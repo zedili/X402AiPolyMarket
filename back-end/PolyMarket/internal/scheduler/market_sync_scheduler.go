@@ -3,6 +3,7 @@ package scheduler
 import (
 	"X402AiPolyMarket/PolyMarket/internal/polymarket/service"
 	"context"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -39,11 +40,19 @@ func (s *MarketSyncScheduler) Start() error {
 	_, err := s.cron.AddFunc("0 * * * * *", func() {
 		s.wg.Add(1)
 		defer s.wg.Done()
+		defer func() {
+			if r := recover(); r != nil {
+				//捕获当前 gorutine 的 panic，捕获后程序继续运行
+				logx.Errorf("同步任务发生 panic: %v\n堆栈: %s", r, debug.Stack())
+			}
+		}()
 
 		logx.Info("=== 开始执行市场数据同步任务 ===")
 		startTime := time.Now()
 
-		if err := s.syncService.SyncMarkets(s.ctx); err != nil {
+		timeCtx, cancel := context.WithTimeout(s.ctx, 30*time.Second)
+		defer cancel()
+		if err := s.syncService.SyncMarkets(timeCtx); err != nil {
 			logx.Errorf("市场数据同步失败: %v", err)
 		} else {
 			logx.Infof("市场数据同步成功，耗时: %v", time.Since(startTime))
@@ -54,29 +63,52 @@ func (s *MarketSyncScheduler) Start() error {
 		return err
 	}
 
-	// 每天凌晨2点执行一次完整同步（可选）
-	//_, err = s.cron.AddFunc("0 0 2 * * *", func() {
-	//	s.wg.Add(1)
-	//	defer s.wg.Done()
-	//
-	//	logx.Info("=== 开始执行每日完整市场数据同步 ===")
-	//	startTime := time.Now()
-	//
-	//	if err := s.syncService.SyncMarkets(s.ctx); err != nil {
-	//		logx.Errorf("每日完整市场数据同步失败: %v", err)
-	//	} else {
-	//		logx.Infof("每日完整市场数据同步成功，耗时: %v", time.Since(startTime))
-	//	}
-	//})
-
 	if err != nil {
 		return err
 	}
 
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-s.ctx.Done():
+				logx.Info("市场数据同步定时任务已停止")
+				logx.Error(string(debug.Stack()))
+				return
+			case <-time.After(time.Second * 30):
+				logx.Info("=== 调度器存活心跳 ===")
+			case <-ticker.C:
+				if len(s.cron.Entries()) == 0 {
+					logx.Error("FATAL: cron 中没有任何任务，调度器可能已意外停止")
+					logx.Error(string(debug.Stack()))
+				}
+			}
+		}
+	}()
+
+	//go func() {
+	//	<-s.cron.Stop().Done()
+	//	// cron 停止！立刻抓取所有 goroutine 的堆栈
+	//	buf := make([]byte, 1<<20) // 1 MB
+	//	stackLen := runtime.Stack(buf, true)
+	//	stackStr := string(buf[:stackLen])
+	//
+	//	logx.Error("FATAL: cron 调度器已停止！全部 goroutine 堆栈：")
+	//	logx.Error(stackStr)
+	//
+	//	// 同时输出到 stderr（会被 crash.log 捕获）
+	//	fmt.Fprintf(os.Stderr, "FATAL: cron stopped, all goroutines stack:\n%s\n", stackStr)
+	//}()
+
 	s.cron.Start()
+
+	go func() {
+		<-s.ctx.Done()
+		logx.Errorf("市场数据同步定时任务意外终止")
+	}()
+
 	logx.Info("市场数据同步定时任务启动成功")
-	logx.Info(" - 常规同步: 每30分钟")
-	logx.Info(" - 完整同步: 每天凌晨2点")
 
 	return nil
 }

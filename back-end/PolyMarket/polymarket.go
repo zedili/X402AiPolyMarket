@@ -23,6 +23,15 @@ import (
 )
 
 func main() {
+	// 重定向 stderr 到文件，捕获所有致命错误
+	stderrLog, err := os.OpenFile("stderr.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		panic(fmt.Sprintf("无法打开 stderr.log: %v", err))
+	}
+	defer stderrLog.Close()
+	os.Stderr = stderrLog
+
+	// 0️⃣ 加载配置文件
 	configFile := flag.String("f", "etc/polymarket-api.yaml", "the config file")
 	flag.Parse()
 
