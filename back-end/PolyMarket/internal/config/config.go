@@ -8,11 +8,12 @@ import "github.com/zeromicro/go-zero/rest"
 type Config struct {
 	rest.RestConf
 
-	MySQL      MySQLConfig
-	Redis      RedisConfig
-	Blockchain BlockchainConfig
-	Auth       AuthConfig
-	Business   BusinessConfig
+	MySQL          MySQLConfig
+	Redis          RedisConfig
+	Blockchain     BlockchainConfig
+	Auth           AuthConfig
+	Business       BusinessConfig
+	DeepseekConfig DeepseekConfig
 }
 
 type MySQLConfig struct {
@@ -51,4 +52,8 @@ type BusinessConfig struct {
 	MinMarketDuration int64
 	MaxMarketDuration int64
 	MinLiquidity      float64
+}
+
+type DeepseekConfig struct {
+	ApiKey string
 }
