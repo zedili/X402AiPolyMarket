@@ -46,7 +46,7 @@ func (l *MarketDetailLogic) GetMarketDetail(marketID uint64, userAddress *string
 	if market.AuditStatus == model.AuditStatusApproved && market.Status == model.MarketStatusPending && !now.Before(market.StartTime) {
 		derivedStatus = model.MarketStatusActive
 	}
-	if derivedStatus == model.MarketStatusActive && now.After(market.EndTime) && market.Status != model.MarketStatusSettled {
+	if derivedStatus == model.MarketStatusActive && now.After(*market.EndTime) && market.Status != model.MarketStatusSettled {
 		derivedStatus = model.MarketStatusEnded
 	}
 
@@ -69,7 +69,7 @@ func (l *MarketDetailLogic) GetMarketDetail(marketID uint64, userAddress *string
 		Confidence:       market.Confidence,
 		Suggests:         market.Suggests,
 		StartTime:        market.StartTime,
-		EndTime:          market.EndTime,
+		EndTime:          *market.EndTime,
 		SettlementTime:   market.SettlementTime,
 		Status:           derivedStatus,
 		Result:           market.Result,
@@ -95,4 +95,3 @@ func (l *MarketDetailLogic) GetMarketDetail(marketID uint64, userAddress *string
 
 	return resp, nil
 }
-

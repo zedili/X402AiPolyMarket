@@ -27,18 +27,49 @@ func NewMarketSyncService() *MarketSyncService {
 // SyncMarkets 同步市场数据到现有的 markets 表
 func (s *MarketSyncService) SyncMarkets(ctx context.Context) error {
 	logx.Info("开始同步 Polymarket 市场数据...")
-	return nil
+
 	startTime := time.Now()
 
-	markets, err := s.gammaClient.GetMarkets(nil)
+	offset := 0
+	successCount, failedCount := 0, 0
+	for {
+		sucount, faiCount, err, marketLength := s.saveMarketToDb(ctx, startTime, &offset)
+		if err != nil {
+			return err
+		}
+		if marketLength == 0 {
+			break
+		}
+		offset += 100
+		successCount += sucount
+		failedCount += faiCount
+		// 避免请求过快，稍微等待
+		time.Sleep(100 * time.Millisecond)
+
+	}
+	totalDuration := time.Since(startTime)
+	logx.Infof("市场数据同步完成 - offset:%d, 成功: %d, 失败: %d, 总耗时: %v",
+		offset, successCount, failedCount, totalDuration)
+
+	if failedCount > 0 {
+		return fmt.Errorf("部分市场数据同步失败: %d/%d", failedCount, successCount+failedCount)
+	}
+
+	return nil
+}
+
+func (s *MarketSyncService) saveMarketToDb(ctx context.Context, startTime time.Time, offset *int) (int, int, error, int) {
+	markets, err := s.gammaClient.GetMarkets(nil, offset)
 	if err != nil {
-		return fmt.Errorf("获取市场数据失败: %w", err)
+		return 0, 0, fmt.Errorf("获取市场数据失败: %w", err), len(markets)
 	}
 
 	logx.Infof("获取到 %d 个市场数据，耗时: %v", len(markets), time.Since(startTime))
 
 	successCount := 0
 	failedCount := 0
+
+	var marketToInsert []*model.Market
 
 	for _, pmMarket := range markets {
 		existingMarket, err := s.mapToExistingMarket(pmMarket)
@@ -48,31 +79,43 @@ func (s *MarketSyncService) SyncMarkets(ctx context.Context) error {
 			continue
 		}
 
-		err = model.DB.WithContext(ctx).Clauses(
-			clause.OnConflict{
-				Columns: []clause.Column{{Name: "market_id"}}, // 👈 冲突判断字段
-				DoUpdates: clause.AssignmentColumns([]string{ // 👈 冲突时更新的字段
-					"question",
-					"description",
-					"category",
-					"creator_address",
-					"yes_price",
-					"no_price",
-					"yes_shares",
-					"no_shares",
-					"total_volume",
-					"total_liquidity",
-					"start_time",
-					"end_time",
-					"status",
-					"is_hot",
-					"is_featured",
-					"tags",
-					"metadata",
-					"updated_at",
-				}),
-			},
-		).Create(&existingMarket).Error
+		marketToInsert = append(marketToInsert, existingMarket)
+
+		batchSize := 100
+		for i := 0; i < len(marketToInsert); i += batchSize {
+			end := i + batchSize
+			if end > len(marketToInsert) {
+				end = len(marketToInsert)
+			}
+			batch := marketToInsert[i:end]
+			if len(batch) > 0 {
+				err = model.DB.WithContext(ctx).Clauses(
+					clause.OnConflict{
+						Columns: []clause.Column{{Name: "market_id"}}, // 👈 冲突判断字段
+						DoUpdates: clause.AssignmentColumns([]string{ // 👈 冲突时更新的字段
+							"question",
+							"description",
+							"category",
+							"creator_address",
+							"yes_price",
+							"no_price",
+							"yes_shares",
+							"no_shares",
+							"total_volume",
+							"total_liquidity",
+							"start_time",
+							"end_time",
+							"status",
+							"is_hot",
+							"is_featured",
+							"tags",
+							"metadata",
+							"updated_at",
+						}),
+					},
+				).Create(&batch).Error
+			}
+		}
 
 		if err != nil {
 			logx.Errorf("保存市场数据失败 [ID=%s]: %v", pmMarket.ID, err)
@@ -82,16 +125,7 @@ func (s *MarketSyncService) SyncMarkets(ctx context.Context) error {
 
 		successCount++
 	}
-
-	totalDuration := time.Since(startTime)
-	logx.Infof("市场数据同步完成 - 成功: %d, 失败: %d, 总耗时: %v",
-		successCount, failedCount, totalDuration)
-
-	if failedCount > 0 {
-		return fmt.Errorf("部分市场数据同步失败: %d/%d", failedCount, successCount+failedCount)
-	}
-
-	return nil
+	return successCount, failedCount, nil, len(markets)
 }
 
 // mapToExistingMarket 将 Polymarket API 数据映射到现有的 Market 模型
@@ -196,7 +230,7 @@ func (s *MarketSyncService) mapToExistingMarket(pmMarket polymarket.Market) (*mo
 
 		// 时间信息
 		StartTime: pmMarket.StartDate,
-		EndTime:   pmMarket.EndDate,
+		EndTime:   &pmMarket.EndDate,
 
 		// 状态
 		Status: status,
@@ -220,6 +254,10 @@ func (s *MarketSyncService) mapToExistingMarket(pmMarket polymarket.Market) (*mo
 	//	contractAddr := "poly_" + pmMarket.ConditionID
 	//	market.ContractAddress = &contractAddr
 	//}
+
+	if market.EndTime.IsZero() {
+		market.EndTime = nil
+	}
 
 	return market, nil
 }

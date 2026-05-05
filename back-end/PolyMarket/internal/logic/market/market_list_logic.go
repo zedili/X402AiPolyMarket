@@ -126,7 +126,7 @@ func (l *MarketListLogic) GetMarketList(req *types.MarketListRequest) (*types.Ma
 			Confidence:       m.Confidence,
 			Suggests:         m.Suggests,
 			StartTime:        m.StartTime,
-			EndTime:          m.EndTime,
+			EndTime:          *m.EndTime,
 			Status:           m.Status,
 			IsHot:            m.IsHot,
 			IsFeatured:       m.IsFeatured,

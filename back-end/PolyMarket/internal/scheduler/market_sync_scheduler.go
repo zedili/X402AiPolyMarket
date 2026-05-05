@@ -37,7 +37,7 @@ func (s *MarketSyncScheduler) Start() error {
 	logx.Info("启动市场数据同步定时任务...")
 
 	// 每分钟同步一次市场数据
-	_, err := s.cron.AddFunc("0 * * * * *", func() {
+	_, err := s.cron.AddFunc("0 */5 * * * *", func() {
 		s.wg.Add(1)
 		defer s.wg.Done()
 		defer func() {
@@ -50,7 +50,7 @@ func (s *MarketSyncScheduler) Start() error {
 		logx.Info("=== 开始执行市场数据同步任务 ===")
 		startTime := time.Now()
 
-		timeCtx, cancel := context.WithTimeout(s.ctx, 30*time.Second)
+		timeCtx, cancel := context.WithTimeout(s.ctx, 10*time.Minute)
 		defer cancel()
 		if err := s.syncService.SyncMarkets(timeCtx); err != nil {
 			logx.Errorf("市场数据同步失败: %v", err)
@@ -86,20 +86,6 @@ func (s *MarketSyncScheduler) Start() error {
 			}
 		}
 	}()
-
-	//go func() {
-	//	<-s.cron.Stop().Done()
-	//	// cron 停止！立刻抓取所有 goroutine 的堆栈
-	//	buf := make([]byte, 1<<20) // 1 MB
-	//	stackLen := runtime.Stack(buf, true)
-	//	stackStr := string(buf[:stackLen])
-	//
-	//	logx.Error("FATAL: cron 调度器已停止！全部 goroutine 堆栈：")
-	//	logx.Error(stackStr)
-	//
-	//	// 同时输出到 stderr（会被 crash.log 捕获）
-	//	fmt.Fprintf(os.Stderr, "FATAL: cron stopped, all goroutines stack:\n%s\n", stackStr)
-	//}()
 
 	s.cron.Start()
 

@@ -35,7 +35,7 @@ type Market struct {
 
 	// 时间信息
 	StartTime      time.Time  `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"start_time"`
-	EndTime        time.Time  `gorm:"type:timestamp;index:idx_end_time;not null" json:"end_time"`
+	EndTime        *time.Time `gorm:"type:timestamp;index:idx_end_time;" json:"end_time"`
 	SettlementTime *time.Time `gorm:"type:timestamp" json:"settlement_time,omitempty"`
 
 	// 状态

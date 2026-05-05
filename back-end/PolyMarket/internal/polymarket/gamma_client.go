@@ -29,8 +29,9 @@ func NewGammaClient() *GammaClient {
 }
 
 // GetMarkets 获取市场列表
-func (c *GammaClient) GetMarkets(params map[string]string) ([]Market, error) {
-	url := c.baseURL + "/markets"
+func (c *GammaClient) GetMarkets(params map[string]string, offset *int) ([]Market, error) {
+
+	url := c.baseURL + "/markets" + "?limit=100" + "&offset=" + fmt.Sprintf("%d", *offset)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -50,14 +51,6 @@ func (c *GammaClient) GetMarkets(params map[string]string) ([]Market, error) {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
-
-	// 读取响应体
-	//bodyBytes, err := io.ReadAll(resp.Body)
-	//if err != nil {
-	//	return nil, fmt.Errorf("read response body failed: %w", err)
-	//}
-	// 打印原始响应（调试用，生产环境建议注释掉）
-	//logx.Debugf("API Response Body: %s", string(bodyBytes))
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
