@@ -2,6 +2,7 @@ Name: PolyMarket-api
 Host: 0.0.0.0
 Port: 8888
 Mode: dev
+Timeout: 30000  # 30秒
 
 # ✅ go-zero v1.9.x 正确的 CORS 配置
 Cors:
@@ -67,3 +68,8 @@ Business:
   MinMarketDuration: 86400
   MaxMarketDuration: 31536000
   MinLiquidity: 1000
+
+#  deepseek api-key
+DeepseekConfig:
+  #  sk-3fa4d916c80347fdb5fec1eb05b39311
+    ApiKey: "sk-3fa4d916c80347fdb5fec1eb05b39311"

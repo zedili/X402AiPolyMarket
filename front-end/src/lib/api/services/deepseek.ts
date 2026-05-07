@@ -1,5 +1,6 @@
 // DeepSeek API 服务
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
+// const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
+const DEEPSEEK_API_URL = 'http://localhost:3000/api/v1/v1/chat/completions';
 const DEEPSEEK_API_KEY = 'sk-3accdd7507b943b59179c45eb265e73f';
 
 interface DeepSeekMessage {

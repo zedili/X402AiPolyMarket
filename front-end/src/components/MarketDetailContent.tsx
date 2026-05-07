@@ -7,20 +7,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, Users, Clock, Sparkles, AlertCircle, Info } from 'lucide-react';
 import { CreateOrderForm } from './CreateOrderForm';
 import { AIPredictionCard } from './AIPredictionCard';
-import { useMarketPrice } from '@/hooks/useWebSocket';
+// import { useMarketPrice } from '@/hooks/useWebSocket';
 import type { MarketDetailResponse } from '@/lib/api/types';
+import { useAuth } from '../hooks/useAuth';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface MarketDetailContentProps {
   market: MarketDetailResponse;
 }
 
 export function MarketDetailContent({ market }: MarketDetailContentProps) {
-  const { priceData, isConnected } = useMarketPrice(market.id);
+  // const { priceData, isConnected } = useMarketPrice(market.id);
   const [activeTab, setActiveTab] = useState('overview');
 
+  const { isAuthenticated } = useAuth();
+
+    if (!isAuthenticated) {
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>请先连接钱包登录后再进行交易</AlertDescription>
+      </Alert>
+    );
+  }
+
   // 使用实时价格或市场数据
-  const yesPrice = priceData?.yes_price ?? market.yes_price;
-  const noPrice = priceData?.no_price ?? market.no_price;
+  // const yesPrice = priceData?.yes_price ?? market.yes_price;
+  // const noPrice = priceData?.no_price ?? market.no_price;
 
   return (
     <div className="space-y-6">
@@ -46,11 +59,11 @@ export function MarketDetailContent({ market }: MarketDetailContentProps) {
                   精选
                 </Badge>
               )}
-              {isConnected && (
+              {/* {isConnected && (
                 <Badge variant="outline" className="text-green-500">
                   实时
                 </Badge>
-              )}
+              )} */}
             </div>
           </div>
         </div>
@@ -63,7 +76,7 @@ export function MarketDetailContent({ market }: MarketDetailContentProps) {
               <CardDescription>支持该结果的价格</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold text-green-500">{yesPrice}%</div>
+              {/* <div className="text-4xl font-bold text-green-500">{yesPrice}%</div> */}
               <div className="text-sm text-muted-foreground mt-2">
                 份额: {market.yes_shares.toLocaleString()}
               </div>
@@ -76,7 +89,7 @@ export function MarketDetailContent({ market }: MarketDetailContentProps) {
               <CardDescription>反对该结果的价格</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold text-red-500">{noPrice}%</div>
+              {/* <div className="text-4xl font-bold text-red-500">{noPrice}%</div> */}
               <div className="text-sm text-muted-foreground mt-2">
                 份额: {market.no_shares.toLocaleString()}
               </div>
