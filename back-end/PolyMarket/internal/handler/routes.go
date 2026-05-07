@@ -4,6 +4,7 @@
 package handler
 
 import (
+	"X402AiPolyMarket/PolyMarket/internal/handler/deepseek"
 	"net/http"
 
 	"X402AiPolyMarket/PolyMarket/internal/handler/auth"
@@ -188,5 +189,16 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 		rest.WithPrefix("/api/v1"),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+	)
+
+	server.AddRoute(rest.Route{
+		// deepseek 预测
+		Method:  http.MethodPost,
+		Path:    "/v1/chat/completions",
+		Handler: deepseek.NewDeepSeekProxyHandler(serverCtx).Handle,
+	},
+		rest.WithTimeout(0),
+		rest.WithPrefix("/api/v1"),
+		//rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 	)
 }
