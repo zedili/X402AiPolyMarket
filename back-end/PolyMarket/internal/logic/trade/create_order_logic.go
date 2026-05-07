@@ -42,13 +42,13 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderRequest, userAddres
 	}
 
 	// 检查市场是否已结束
-	if time.Now().After(market.EndTime) {
+	if time.Now().After(*market.EndTime) {
 		return nil, utils.NewError(utils.CodeParamError, "Market has ended")
 	}
 
 	// 2. 计算订单总价值和手续费
 	totalValue := req.Amount * req.Price / 100 // price是cents，需要除以100
-	fee := totalValue * 0.02 // 2%手续费
+	fee := totalValue * 0.02                   // 2%手续费
 
 	// 3. 创建订单
 	order := &model.Order{
@@ -116,4 +116,3 @@ func (l *CreateOrderLogic) matchOrder(orderID uint64) {
 	// 6. 更新市场统计数据
 	logx.Infof("Order matching for order %d (not implemented yet)", orderID)
 }
-

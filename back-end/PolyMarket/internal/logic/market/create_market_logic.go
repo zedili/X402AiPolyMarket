@@ -70,7 +70,7 @@ func (l *CreateMarketLogic) CreateMarket(req *types.CreateMarketRequest, userAdd
 		CreatorAddress: creatorAddress,
 		YesPrice:       50.00, // 初始价格
 		NoPrice:        50.00,
-		EndTime:        endTime,
+		EndTime:        &endTime,
 		Status:         model.MarketStatusPending, // 待开始
 		AuditStatus:    model.AuditStatusPending,  // 待审核
 		Tags:           req.Tags,
