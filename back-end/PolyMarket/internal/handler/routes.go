@@ -5,6 +5,7 @@ package handler
 
 import (
 	"X402AiPolyMarket/PolyMarket/internal/handler/deepseek"
+	"X402AiPolyMarket/PolyMarket/internal/middleware"
 	"net/http"
 
 	"X402AiPolyMarket/PolyMarket/internal/handler/auth"
@@ -189,13 +190,23 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 		rest.WithPrefix("/api/v1"),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+		/**
+		rest.WithJwt 是 go-zero 提供的内置 JWT 认证中间件。作用：
+		1、自动拦截请求，检查 Authorization 头中的 JWT Token
+		2、使用提供的 AccessSecret 验证 Token 签名
+		3、验证 Token 后，将 Token 中 payload 信息保存到 ctx 中，供后续处理使用
+		4、如果验证失败，则返回 401 Unauthorized
+		*/
 	)
+
+	// 自定义认证中间件
+	authMiddleware := middleware.NewAuthMiddleware(serverCtx.Config.Auth)
 
 	server.AddRoute(rest.Route{
 		// deepseek 预测
 		Method:  http.MethodPost,
 		Path:    "/v1/chat/completions",
-		Handler: deepseek.NewDeepSeekProxyHandler(serverCtx).Handle,
+		Handler: authMiddleware.Handle(deepseek.NewDeepSeekProxyHandler(serverCtx).Handle),
 	},
 		rest.WithTimeout(0),
 		rest.WithPrefix("/api/v1"),
