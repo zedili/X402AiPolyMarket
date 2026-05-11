@@ -45,9 +45,6 @@ func (l *MarketListLogic) GetMarketList(req *types.MarketListRequest) (*types.Ma
 	// 构建查询
 	query := model.DB.Model(&model.Market{})
 
-	// 管理员地址（临时硬编码）
-	const adminAddress = "0xf0aC9747345c23B6ba451d9103F8C2785800998D"
-
 	// 分类筛选
 	if req.Category != nil && *req.Category != "" {
 		query = query.Where("category = ?", *req.Category)
@@ -56,6 +53,11 @@ func (l *MarketListLogic) GetMarketList(req *types.MarketListRequest) (*types.Ma
 	// 状态筛选
 	if req.Status != nil {
 		query = query.Where("status = ?", *req.Status)
+	} else {
+		query = query.Where("status IN(?)", []uint8{
+			model.MarketStatusPending, // 待开始
+			model.MarketStatusActive,  // 进行中
+		})
 	}
 
 	// 热门筛选
