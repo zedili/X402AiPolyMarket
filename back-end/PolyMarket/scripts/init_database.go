@@ -89,6 +89,16 @@ func main() {
 		fmt.Println("✅ 分类表已有数据，跳过默认分类插入")
 	}
 
+	// Step 8: Market 增加 市场id 字段
+	execSQLFile(db, "module4_init_db.sql")
+
+	// Step 9: 初始化 module5（AI预测模块：ai_prediction_logs, payments 表）
+	if !tableExists(db, "ai_prediction_logs") || !tableExists(db, "payments") {
+		execSQLFile(db, "module5_init_db.sql")
+	} else {
+		fmt.Println("⚠️ 表 ai_prediction_logs / payments  已存在，跳过 module5_init_db.sql")
+	}
+
 	fmt.Println("\n🎉 数据库初始化流程完成！")
 }
 
