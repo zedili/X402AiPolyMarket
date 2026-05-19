@@ -89,6 +89,7 @@ func GetUserID(ctx context.Context) (int64, bool) {
 
 // GetWalletAddress 从 context 中获取钱包地址
 func GetWalletAddress(ctx context.Context) (string, bool) {
-	addr, ok := ctx.Value("wallet_address").(string)
+	addr, ok := ctx.Value(WalletAddressKey).(string)
+	logx.Errorf("GetWalletAddress: %v", addr)
 	return addr, ok
 }

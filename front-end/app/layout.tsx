@@ -5,9 +5,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Layout from "@/components/Layout";
-import { WalletProvider } from "@/providers/wallet-provider";
 import WalletAuthHandler from "@/components/WalletAuthHandler";
 import "./globals.css";
+import '@solana/wallet-adapter-react-ui/styles.css';
+
+// Metamask 连接使用的 provider
+import { WalletProvider } from "@/providers/wallet-provider";
+// Solana 钱包连接使用的 provider
+import SolanaProviders from '@/providers/solana-provider';
 
 export const metadata: Metadata = {
   title: "AI Predict Market",
@@ -26,7 +31,8 @@ export default function RootLayout({
       </head>
       <body>
         <ErrorBoundary>
-          <WalletProvider>
+          {/* <WalletProvider> */}
+          <SolanaProviders>
             <ThemeProvider defaultTheme="light" switchable={true}>
               <TooltipProvider>
                 <Toaster />
@@ -34,7 +40,9 @@ export default function RootLayout({
                 <Layout>{children}</Layout>
               </TooltipProvider>
             </ThemeProvider>
-          </WalletProvider>
+          </SolanaProviders>
+
+          {/* </WalletProvider> */}
         </ErrorBoundary>
       </body>
     </html>

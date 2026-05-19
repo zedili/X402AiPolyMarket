@@ -28,13 +28,25 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 }
 
 func (l *LoginLogic) Login(req *types.LoginRequest) (*types.LoginResponse, error) {
-	// 验证钱包地址格式
-	if !utils.IsValidAddress(req.WalletAddress) {
-		return nil, utils.NewError(utils.CodeInvalidAddress, "Invalid wallet address")
-	}
 
+	if req.ChainType == "EVM" {
+		// 验证钱包地址格式
+		if !utils.IsValidAddress(req.WalletAddress) {
+			return nil, utils.NewError(utils.CodeInvalidAddress, "Invalid wallet address")
+		}
+	} else if req.ChainType == "SOLANA" {
+		if !utils.IsValidSolanaAddress(req.WalletAddress) {
+			return nil, utils.NewError(utils.CodeInvalidAddress, "Invalid wallet address")
+		}
+	} else {
+		return nil, utils.NewError(utils.CodeInvalidAddress, "Invalid wallet chain type")
+	}
 	// 标准化地址
-	address := utils.NormalizeAddress(req.WalletAddress)
+	address := req.WalletAddress
+	if req.ChainType == "EVM" {
+		// 标准化地址
+		address = utils.NormalizeAddress(req.WalletAddress)
+	}
 
 	// 验证 Nonce 是否存在且未过期
 	var authNonce model.AuthNonce
@@ -49,14 +61,27 @@ func (l *LoginLogic) Login(req *types.LoginRequest) (*types.LoginResponse, error
 		return nil, utils.NewError(utils.CodeServerError, "Failed to verify nonce")
 	}
 
-	// 验证签名
-	valid, err := utils.VerifySignature(req.Nonce, req.Signature, address)
-	if err != nil {
-		logx.Errorf("Failed to verify signature: %v", err)
-		return nil, utils.NewError(utils.CodeInvalidSign, "Failed to verify signature")
+	verifyValid := false
+	var verifyErr error
+	if req.ChainType == "EVM" {
+		// EVM 环境下验证签名
+		verifyValid, verifyErr = utils.VerifySignature(req.Nonce, req.Signature, address)
+		if verifyErr != nil {
+			logx.Errorf("Failed to verify signature: %v", verifyErr)
+			return nil, utils.NewError(utils.CodeInvalidSign, "Failed to verify signature")
+		}
+	} else if req.ChainType == "SOLANA" {
+		// solana 环境下验证签名
+		verifyValid, verifyErr = utils.VerifySolanaSignature(req.Nonce, req.Signature, req.WalletAddress)
+		if verifyErr != nil {
+			logx.Errorf("Failed to verify signature: %v", verifyErr)
+			return nil, utils.NewError(utils.CodeInvalidSign, "Failed to verify signature")
+		}
+	} else {
+		return nil, utils.NewError(utils.CodeServerError, "Chain type not supported")
 	}
 
-	if !valid {
+	if !verifyValid {
 		return nil, utils.NewError(utils.CodeInvalidSign, "Invalid signature")
 	}
 

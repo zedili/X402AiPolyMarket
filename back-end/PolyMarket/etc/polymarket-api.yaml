@@ -58,7 +58,7 @@ Blockchain:
 # JWT 配置
 Auth:
   AccessSecret: your-access-secret-key-change-in-production
-  AccessExpire: 86400
+  AccessExpire: 92800
   RefreshSecret: your-refresh-secret-key-change-in-production
   RefreshExpire: 604800
 
@@ -73,3 +73,9 @@ Business:
 DeepseekConfig:
   #  sk-3fa4d916c80347fdb5fec1eb05b39311
     ApiKey: "sk-3fa4d916c80347fdb5fec1eb05b39311"
+
+X402Config:
+  Enable: true
+  Amount: 0.01
+  Recipient: Hk8as5BkVuhownGZUuRWa37SWnGgH1RtoWNpYqowyita
+  RpcUrl: https://api.devnet.solana.com

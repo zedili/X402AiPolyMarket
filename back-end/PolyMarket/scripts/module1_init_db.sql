@@ -23,7 +23,7 @@ ADD INDEX   `idx_created_at` (`created_at`);
 -- 2. 创建认证随机数表
 CREATE TABLE   `auth_nonces` (
                                  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID',
-                                 `wallet_address` VARCHAR(42) NOT NULL COMMENT '钱包地址',
+                                 `wallet_address` VARCHAR(50) NOT NULL COMMENT '钱包地址',
                                  `nonce` VARCHAR(255) NOT NULL COMMENT '随机数/登录消息',
                                  `expires_at` TIMESTAMP NOT NULL COMMENT '过期时间',
                                  `used` TINYINT UNSIGNED DEFAULT 0 COMMENT '是否已使用: 0-未使用 1-已使用',

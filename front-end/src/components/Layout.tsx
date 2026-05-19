@@ -6,10 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Brain, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { WalletLogin } from "@/components/WalletLogin";
 import PageTransition from "@/components/PageTransition";
 import ThemeToggle from "@/components/ThemeToggle";
+
+// RainbowKit 连接组件（连接 Metamask）
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+
+// Solana 钱包连接组件（连接 Phantom 等 Solana 钱包）
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -75,11 +81,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-2">
               <ThemeToggle />
-              <ConnectButton
+              {/* <ConnectButton
                 chainStatus="icon"
                 showBalance={false}
                 accountStatus="address"
-              />
+              /> */}
+              <WalletMultiButton />
               {/* <WalletLogin /> */}
             </div>
             <button
@@ -112,11 +119,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
             <div className="w-full mt-4">
-              <ConnectButton
+              {/* <ConnectButton
                 chainStatus="none"
                 showBalance={false}
                 accountStatus="address"
-              />
+              /> */}
+              <WalletMultiButton />
             </div>
           </nav>
         </div>

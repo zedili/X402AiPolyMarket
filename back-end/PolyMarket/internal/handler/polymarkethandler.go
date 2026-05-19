@@ -4,11 +4,12 @@
 package handler
 
 import (
+	"X402AiPolyMarket/PolyMarket/internal/logic/aiPrediction"
 	"net/http"
 
-	"X402AiPolyMarket/PolyMarket/internal/logic"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
 	"X402AiPolyMarket/PolyMarket/internal/types"
+
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
@@ -20,7 +21,7 @@ func PolyMarketHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			return
 		}
 
-		l := logic.NewPolyMarketLogic(r.Context(), svcCtx)
+		l := aiPrediction.NewPolyMarketLogic(r.Context(), svcCtx)
 		resp, err := l.PolyMarket(&req)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)

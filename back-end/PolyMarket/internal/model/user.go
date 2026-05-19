@@ -27,12 +27,12 @@ func (User) TableName() string {
 
 // UserStats 用户统计数据
 type UserStats struct {
-	TotalTrades  uint    `json:"total_trades"`
-	TotalVolume  float64 `json:"total_volume"`
-	TotalProfit  float64 `json:"total_profit"`
-	WinCount     uint    `json:"win_count"`
-	LoseCount    uint    `json:"lose_count"`
-	WinRate      float64 `json:"win_rate"`
+	TotalTrades uint    `json:"total_trades"`
+	TotalVolume float64 `json:"total_volume"`
+	TotalProfit float64 `json:"total_profit"`
+	WinCount    uint    `json:"win_count"`
+	LoseCount   uint    `json:"lose_count"`
+	WinRate     float64 `json:"win_rate"`
 }
 
 // GetStats 获取用户统计数据
@@ -55,7 +55,7 @@ func (u *User) GetStats() UserStats {
 // AuthNonce 认证随机数模型
 type AuthNonce struct {
 	ID            uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
-	WalletAddress string    `gorm:"type:varchar(42);index:idx_wallet_address;not null" json:"wallet_address"`
+	WalletAddress string    `gorm:"type:varchar(50);index:idx_wallet_address;not null" json:"wallet_address"`
 	Nonce         string    `gorm:"type:varchar(255);uniqueIndex:uk_nonce;not null" json:"nonce"`
 	ExpiresAt     time.Time `gorm:"type:timestamp;index:idx_expires_at;not null" json:"expires_at"`
 	Used          uint8     `gorm:"type:tinyint unsigned;default:0" json:"used"`
@@ -78,4 +78,3 @@ type RefreshToken struct {
 func (RefreshToken) TableName() string {
 	return "refresh_tokens"
 }
-

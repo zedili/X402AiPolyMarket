@@ -1,7 +1,7 @@
 // Code scaffolded by goctl. Safe to edit.
 // goctl 1.9.2
 
-package logic
+package aiPrediction
 
 import (
 	"context"
@@ -28,7 +28,7 @@ func NewPolyMarketLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PolyMa
 
 func (l *PolyMarketLogic) PolyMarket(req *types.Request) (resp *types.Response, err error) {
 	// todo: add your logic here and delete this line
-    resp = new(types.Response)
-    resp.Message = req.Name
+	resp = new(types.Response)
+	resp.Message = req.Name
 	return
 }

@@ -14,7 +14,6 @@ import (
 	"X402AiPolyMarket/PolyMarket/internal/handler"
 	"X402AiPolyMarket/PolyMarket/internal/middleware"
 	"X402AiPolyMarket/PolyMarket/internal/model"
-	"X402AiPolyMarket/PolyMarket/internal/scheduler"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
@@ -52,9 +51,9 @@ func main() {
 	handler.RegisterHandlers(server, ctx)
 
 	// 5️⃣  启动定时器
-	if err := scheduler.NewMarketSyncScheduler().Start(); err != nil {
-		logx.Errorf("启动市场同步任务失败: %v", err)
-	}
+	//if err := scheduler.NewMarketSyncScheduler().Start(); err != nil {
+	//	logx.Errorf("启动市场同步任务失败: %v", err)
+	//}
 
 	// 6️⃣ 优雅关闭
 	go func() {

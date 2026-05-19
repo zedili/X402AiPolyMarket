@@ -38,7 +38,7 @@ export default function X402TestPage() {
     signature: null,
   });
 
-  const x402Client = new X402Client('https://api.devnet.solana.com');
+  const x402Client = new X402Client();
 
   // 模拟连接钱包
   const connectWallet = useCallback(() => {

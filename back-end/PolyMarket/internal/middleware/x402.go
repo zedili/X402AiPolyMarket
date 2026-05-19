@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"X402AiPolyMarket/PolyMarket/internal/config"
+
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -18,26 +20,10 @@ type X402PaymentRequest struct {
 }
 
 // X402Config X402 配置
-type X402Config struct {
-	Enabled   bool    `json:"Enabled" yaml:"Enabled"`
-	Amount    float64 `json:"Amount" yaml:"Amount"`       // 默认服务费用
-	Recipient string  `json:"Recipient" yaml:"Recipient"` // 收款地址
-	RPCURL    string  `json:"RPCURL" yaml:"RPCURL"`       // Solana RPC 端点
-}
-
-// DefaultX402Config 返回默认配置
-func DefaultX402Config() X402Config {
-	return X402Config{
-		Enabled:   true,
-		Amount:    0.001, // 默认 0.001 SOL
-		Recipient: "",    // 需要配置
-		RPCURL:    "https://api.mainnet-beta.solana.com",
-	}
-}
 
 // X402Middleware X402 支付中间件
-func X402Middleware(config X402Config) func(http.HandlerFunc) http.HandlerFunc {
-	if !config.Enabled {
+func X402Middleware(config config.X402Config) func(http.HandlerFunc) http.HandlerFunc {
+	if !config.Enable {
 		// 如果未启用，直接返回原始处理器
 		return func(next http.HandlerFunc) http.HandlerFunc {
 			return next
@@ -101,7 +87,7 @@ func send402Response(w http.ResponseWriter, paymentReq X402PaymentRequest) {
 }
 
 // verifyPayment 验证支付签名（需要实现 Solana 交易验证）
-func verifyPayment(signature string, config X402Config) bool {
+func verifyPayment(signature string, config config.X402Config) bool {
 	// TODO: 实现 Solana 交易签名验证
 	// 1. 通过 RPC 获取交易详情
 	// 2. 验证交易是否已确认

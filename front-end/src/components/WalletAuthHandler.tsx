@@ -1,6 +1,7 @@
 'use client';
 
 import { useWalletAuth } from '@/hooks/useWalletAuth';
+import { useWalletAuthSolana  } from '@/hooks/useWalletAuthSolana';
 
 /**
  * Component to handle automatic wallet authentication
@@ -8,7 +9,8 @@ import { useWalletAuth } from '@/hooks/useWalletAuth';
  * login when wallet connects and logout when wallet disconnects
  */
 export default function WalletAuthHandler() {
-  useWalletAuth();
+  // useWalletAuth();
+  useWalletAuthSolana();
   return null;
 }
 

@@ -16,6 +16,14 @@ export function useWalletAuth() {
   const lastAddressRef = useRef<string | undefined>(undefined);
   const rejectedAddressesRef = useRef<Set<string>>(new Set());
 
+  // 
+  /**
+   * useEffect 执行时机：
+   * 1、组件首次挂载到页面后会执行一次。
+   * 2、依赖项数组发生变化时：react 会比较依赖项数组中的值，只要有一个不同，就会重新执行 useEffect 中的函数。
+   * 3、组件卸载钱会执行清理函数（如果回调函数返回一个清理函数）。
+   * 
+   */
   useEffect(() => {
     // 如果钱包未连接，检查是否需要登出
     if (!isConnected || !address) {
@@ -98,6 +106,8 @@ export function useWalletAuth() {
       // 清除拒绝记录（用户可能手动登录了）
       rejectedAddressesRef.current.delete(address.toLowerCase());
     }
-  }, [isConnected, address, isAuthenticated, user, login, logout, signMessageAsync]);
+  }, 
+  [isConnected, address, isAuthenticated, user, login, logout, signMessageAsync] // 依赖项数组
+);
 }
 

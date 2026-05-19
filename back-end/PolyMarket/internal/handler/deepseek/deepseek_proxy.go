@@ -1,6 +1,8 @@
 package deepseek
 
 import (
+	"X402AiPolyMarket/PolyMarket/internal/config"
+	"X402AiPolyMarket/PolyMarket/internal/logic/aiPrediction"
 	"X402AiPolyMarket/PolyMarket/internal/middleware"
 	"X402AiPolyMarket/PolyMarket/internal/model"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
@@ -25,6 +27,7 @@ type DeepSeekProxyHandler struct {
 	cache        cache.ChatCache
 	singleFlight *cache.SingleFlight
 	httpClient   *http.Client
+	x402Config   config.X402Config
 }
 
 // ServeHTTP 实现 http.Handler 接口，这样就能直接用于 go-zero 的路由注册
@@ -40,10 +43,18 @@ func NewDeepSeekProxyHandler(svcCtx *svc.ServiceContext) *DeepSeekProxyHandler {
 	redisClient := model.RDB                                        // 假设 model 包提供获取 Redis 客户端的方法
 	chatCache := cache.NewRedisCache(redisClient, "deepseek:cache") // Redis key 前缀
 
+	x402Config := config.X402Config{
+		Enable:    svcCtx.Config.X402Config.Enable,
+		Amount:    svcCtx.Config.X402Config.Amount,
+		Recipient: svcCtx.Config.X402Config.Recipient,
+		RpcUrl:    svcCtx.Config.X402Config.RpcUrl,
+	}
+
 	return &DeepSeekProxyHandler{
 		apiKey:       apiKey,
 		cache:        chatCache,
 		singleFlight: cache.NewSingleFlight(),
+		x402Config:   x402Config,
 		httpClient: &http.Client{
 			Timeout: 120 * time.Second,
 		},
@@ -51,6 +62,9 @@ func NewDeepSeekProxyHandler(svcCtx *svc.ServiceContext) *DeepSeekProxyHandler {
 }
 
 func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
+
+	logger := logx.WithContext(r.Context())
+
 	// 从上下文获取用户地址
 	userAddress, ok := middleware.GetWalletAddress(r.Context())
 	if !ok || userAddress == "" {
@@ -74,8 +88,10 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	// 2. 生成缓存键
 	cacheKey, err := utils.GenerateCacheKey(bodyBytes)
 	if err != nil {
-		logx.Errorf("生成缓存键失败: %v", err)
-		h.forwardDirectly(w, r, bodyBytes) // 降级直接转发
+		// 缓存 key 生成失败，降级直接转发
+		logger.Errorf("生成缓存键失败: %v", err)
+		// 生产预测 key 失败，可能是预测信息格式错误
+		utils.ServerError(w, "System busy")
 		return
 	}
 
@@ -83,9 +99,53 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	var temp struct{ Stream bool }
 	_ = json.Unmarshal(bodyBytes, &temp)
 
+	// 判断这个用户是否支付这预测key： cachekey
+	paid, payment, err := aiPrediction.
+		NewPredictionPaymentLogic(r.Context()).
+		ChenckUserPaidPrediction(userAddress, cacheKey)
+
+	if err != nil {
+		logger.Errorf("Failed to find payment: %v", err)
+		// 未找到预测支付记录
+		// 此时返回系统繁忙给前端
+		utils.ServerError(w, "System busy")
+		return
+	}
+
+	// 未开启 x402
+	if !h.x402Config.Enable {
+		utils.ServerError(w, "System busy")
+		return
+	}
+
+	if !paid || payment == nil {
+		// 返回 x402 状态码给前端
+		// 🔑 介入 x402 协议：返回 402 状态码
+		logger.Infof("用户 %s 未支付预测 %s，触发 x402 支付流程", userAddress, cacheKey)
+
+		// 设置 http 响应码 为 402
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusPaymentRequired)
+
+		// 构建 x402 支付信息
+		x402Payment := map[string]interface{}{
+			"PaymentAddress":  payment.UserAddress,
+			"MarketId":        payment.MarketID,
+			"PredictionLogID": payment.PredictionLogID,
+			"memo":            cacheKey,
+			"Amount":          0.0001,
+			"Currency":        "sol",
+			"Recipient":       h.x402Config.Recipient,
+		}
+		json.NewEncoder(w).Encode(x402Payment)
+		return
+	}
+
+	// ---- 用户支付了预测
+
 	// 4. 先查缓存
 	if cached, ok := h.cache.Get(cacheKey); ok {
-		logx.Infof("DeepSeek cache hit: %s", cacheKey)
+		logger.Infof("DeepSeek cache hit: %s", cacheKey)
 		w.Header().Set("X-Cache", "HIT")
 		if cached.Type == cache.CacheValueJSON {
 			w.Header().Set("Content-Type", "application/json")
@@ -97,7 +157,7 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 5. 缓存未命中，使用单飞模式获取
-	logx.Infof("DeepSeek cache miss: %s", cacheKey)
+	logger.Infof("DeepSeek cache miss: %s", cacheKey)
 	w.Header().Set("X-Cache", "MISS")
 
 	cacheValue, err := h.singleFlight.Do(cacheKey, func() (*cache.CacheValue, error) {
@@ -113,7 +173,7 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		logx.Errorf("获取DeepSeek响应失败: %v", err)
+		logger.Errorf("获取DeepSeek响应失败: %v", err)
 		httpx.Error(w, err)
 		return
 	}

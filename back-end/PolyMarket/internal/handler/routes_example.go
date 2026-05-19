@@ -38,7 +38,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			// 可以添加更多需要支付的路由
 			{
 				Method:  http.MethodPost,
-				Path:    "/ai-prediction",
+				Path:    "/aiPrediction",
 				Handler: x402Middleware(AIPredictionHandler(serverCtx)),
 			},
 		},

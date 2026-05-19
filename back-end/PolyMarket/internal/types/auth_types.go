@@ -5,6 +5,7 @@ import "time"
 // NonceRequest 获取Nonce请求
 type NonceRequest struct {
 	WalletAddress string `json:"wallet_address" validate:"required"`
+	ChainType     string `json:"chain_type" validate:"required"`
 }
 
 // NonceResponse 获取Nonce响应
@@ -18,14 +19,15 @@ type LoginRequest struct {
 	WalletAddress string `json:"wallet_address" validate:"required"`
 	Signature     string `json:"signature" validate:"required"`
 	Nonce         string `json:"nonce" validate:"required"`
+	ChainType     string `json:"chain_type" validate:"required"`
 }
 
 // LoginResponse 登录响应
 type LoginResponse struct {
-	AccessToken  string      `json:"access_token"`
-	RefreshToken string      `json:"refresh_token"`
-	ExpiresIn    int64       `json:"expires_in"`
-	User         *UserInfo   `json:"user"`
+	AccessToken  string    `json:"access_token"`
+	RefreshToken string    `json:"refresh_token"`
+	ExpiresIn    int64     `json:"expires_in"`
+	User         *UserInfo `json:"user"`
 }
 
 // RefreshTokenRequest 刷新Token请求
@@ -91,4 +93,3 @@ type PublicUserResponse struct {
 	CreatedAt     time.Time  `json:"created_at"`
 	Stats         *UserStats `json:"stats,omitempty"`
 }
-

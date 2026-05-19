@@ -27,13 +27,27 @@ func NewNonceLogic(ctx context.Context, svcCtx *svc.ServiceContext) *NonceLogic 
 }
 
 func (l *NonceLogic) GetNonce(req *types.NonceRequest) (*types.NonceResponse, error) {
+
 	// 验证钱包地址格式
-	if !utils.IsValidAddress(req.WalletAddress) {
-		return nil, utils.NewError(utils.CodeInvalidAddress, "Invalid wallet address")
+	if req.ChainType == "EVM" {
+		if !utils.IsValidAddress(req.WalletAddress) {
+			return nil, utils.NewError(utils.CodeInvalidAddress, "Invalid wallet address")
+		}
+	} else if req.ChainType == "SOLANA" {
+		if !utils.IsValidSolanaAddress(req.WalletAddress) {
+			return nil, utils.NewError(utils.CodeInvalidAddress, "Invalid wallet address")
+		}
+	} else {
+		return nil, utils.NewError(utils.CodeInvalidChainType, "Invalid chain type")
 	}
 
 	// 标准化地址
-	address := utils.NormalizeAddress(req.WalletAddress)
+	address := req.WalletAddress
+	if req.ChainType == "EVM" {
+		// 标准化地址
+		// EVM 地址以 0x 开头，需要添加 0x 前缀并转为小写
+		address = utils.NormalizeAddress(req.WalletAddress)
+	}
 
 	// 生成随机数
 	nonce, err := utils.GenerateNonce()

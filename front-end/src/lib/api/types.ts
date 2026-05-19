@@ -26,6 +26,7 @@ export enum ErrorCode {
 
 export interface NonceRequest {
   wallet_address: string;
+  chain_type?: string; // 默认为 "SOLANA"
 }
 
 export interface NonceResponse {
@@ -37,6 +38,7 @@ export interface LoginRequest {
   wallet_address: string;
   signature: string;
   nonce: string;
+  chain_type?: string; // 默认为 "SOLANA"
 }
 
 export interface LoginResponse {

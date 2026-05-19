@@ -14,6 +14,7 @@ type Config struct {
 	Auth           AuthConfig
 	Business       BusinessConfig
 	DeepseekConfig DeepseekConfig
+	X402Config     X402Config
 }
 
 type MySQLConfig struct {
@@ -56,4 +57,21 @@ type BusinessConfig struct {
 
 type DeepseekConfig struct {
 	ApiKey string
+}
+
+type X402Config struct {
+	Enable    bool    `json:"Enable" yaml:"Enable"`
+	Amount    float64 `json:"Amount" yaml:"Amount"`       // 默认服务费用
+	Recipient string  `json:"Recipient" yaml:"Recipient"` // 收款地址
+	RpcUrl    string  `json:"RpcUrl" yaml:"RpcUrl"`       // Solana RPC 端点
+}
+
+// DefaultX402Config 返回默认配置
+func DefaultX402Config() X402Config {
+	return X402Config{
+		Enable:    true,
+		Amount:    0.001, // 默认 0.001 SOL
+		Recipient: "",    // 需要配置
+		RpcUrl:    "https://api.mainnet-beta.solana.com",
+	}
 }

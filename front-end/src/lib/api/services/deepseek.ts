@@ -1,3 +1,6 @@
+import { AuthManager } from '../auth';
+import { x402Client  } from '../../x402-client';
+
 // DeepSeek API 服务
 // const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
 const DEEPSEEK_API_URL = 'http://localhost:3000/api/v1/v1/chat/completions';
@@ -69,11 +72,33 @@ export async function callDeepSeek(
     max_tokens: 2000,
   };
 
+
+
+  // try {
+      // 添加认证token
+    // const token = AuthManager.getAccessToken();
+    // 添加认证token
+    // await x402Client.setToken(token);
+
+    // console.log('token11111111111111111111111111111', token);
+    // const response = await fetch(DEEPSEEK_API_URL, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     // 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+    //   }
+    // })
+  // }
+
+  // // 添加认证token
+  const token = AuthManager.getAccessToken();
+  // console.log('token11111111111111111111111111111', token);
   const response = await fetch(DEEPSEEK_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+      // 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+      'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify(requestBody),
   });
@@ -129,11 +154,14 @@ export async function callDeepSeekStream(
   };
 
   try {
+    // 添加认证token
+    const token = AuthManager.getAccessToken();
     const response = await fetch(DEEPSEEK_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+        // 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(requestBody),
     });

@@ -13,8 +13,8 @@ func GenerateCacheKey(bodyBytes []byte) (string, error) {
 	var req struct {
 		Model    string `json:"model"`
 		Messages []struct {
-			Role    string `json:"role"`
-			Content string `json:"content"`
+			Role    string `json:"role"`    // 消息角色：ex:你是一个预测市场专家
+			Content string `json:"content"` // 对话消息的具体内容
 		} `json:"messages"`
 		Temperature *float64 `json:"temperature"`
 		TopP        *float64 `json:"top_p"`

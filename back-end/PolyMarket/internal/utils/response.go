@@ -25,6 +25,7 @@ const (
 	CodeServerError         = 1005
 	CodeInvalidAddress      = 2001
 	CodeInvalidSign         = 2002
+	CodeInvalidChainType    = 2003
 	CodeMarketNotFound      = 3001
 	CodeMarketClosed        = 3002
 	CodeInsufficientBalance = 4001
@@ -71,4 +72,3 @@ func Forbidden(w http.ResponseWriter, msg string) {
 func ServerError(w http.ResponseWriter, msg string) {
 	Error(w, CodeServerError, msg)
 }
-
