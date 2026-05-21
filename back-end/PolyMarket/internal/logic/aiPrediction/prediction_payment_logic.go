@@ -3,8 +3,10 @@ package aiPrediction
 import (
 	"X402AiPolyMarket/PolyMarket/internal/model"
 	"context"
+	"errors"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"gorm.io/gorm"
 )
 
 type PredictionPaymentLogic struct {
@@ -29,25 +31,38 @@ func NewPredictionPaymentLogic(ctx context.Context) *PredictionPaymentLogic {
  */
 func (l *PredictionPaymentLogic) ChenckUserPaidPrediction(userAddress string, cacheKey string) (bool, *model.Payment, error) {
 	var payment model.Payment
-
-	// 通过cacheKey查询缓存
-	err := model.DB.Where("user_address = ? and status = ?",
+	// 1、先检查是否存在支付记录
+	err := model.DB.Where("user_address = ? and cache_key = ?",
 		userAddress,
-		model.PaymentStatusPaid,
+		cacheKey,
 	).
-		Joins("JOIN ai_prediction_logs ON payments.prediction_log_id = ai_prediction_logs.id").
-		Where("ai_prediction_logs.cache_key = ?", cacheKey).
+		Order("created_at DESC").
 		First(&payment).
 		Error
-	if err != nil {
-		l.Errorf("Failed to find payment: %v", err)
-		// 未找到预测支付记录
+
+	// 其他异常，返回错误
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		l.Errorf("Failed to check payment: %v", err)
 		return false, nil, err
 	}
 
-	l.Infof("用户 %s 已支付预测 %s，支付ID: %d", userAddress, cacheKey, payment.ID)
-	// 找到预测支付记录
-	return true, &payment, err
+	// 无记录异常，创建一条待支付记录
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		// 找不到支付记录，新增一条待支付的记录
+		newPayment := &model.Payment{
+			UserAddress: userAddress,
+			Status:      model.PaymentStatusPending,
+			CacheKey:    cacheKey,
+		}
+		if err := model.DB.Create(newPayment).Error; err != nil {
+			l.Errorf("Failed to create payment: %v", err)
+			return false, nil, err
+		}
+		// 返回刚创建的待支付记录
+		payment = *newPayment
+	}
+
+	return payment.IsCompleted(), &payment, nil
 }
 
 /**

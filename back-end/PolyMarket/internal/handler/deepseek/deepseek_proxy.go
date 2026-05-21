@@ -9,6 +9,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
+	"gorm.io/gorm"
 )
 
 type DeepSeekProxyHandler struct {
@@ -74,10 +76,6 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	// 1. 读取请求体
 	bodyBytes, err := io.ReadAll(r.Body)
-	//if 1 == 1 {
-	//	h.forwardDirectly(w, r, bodyBytes)
-	//	return
-	//}
 
 	if err != nil {
 		httpx.Error(w, err)
@@ -105,11 +103,15 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		ChenckUserPaidPrediction(userAddress, cacheKey)
 
 	if err != nil {
-		logger.Errorf("Failed to find payment: %v", err)
-		// 未找到预测支付记录
-		// 此时返回系统繁忙给前端
-		utils.ServerError(w, "System busy")
-		return
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+		} else {
+			logger.Errorf("Failed to find payment: %v", err)
+			// 未找到预测支付记录
+			// 此时返回系统繁忙给前端
+			utils.ServerError(w, "System busy")
+			return
+		}
 	}
 
 	// 未开启 x402
@@ -123,19 +125,19 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		// 🔑 介入 x402 协议：返回 402 状态码
 		logger.Infof("用户 %s 未支付预测 %s，触发 x402 支付流程", userAddress, cacheKey)
 
-		// 设置 http 响应码 为 402
+		// 设置 http 响应码 为 402 、 支付信息
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-Payment-Required", "true")
+		w.Header().Set("X-Payment-Memo", cacheKey)
+		w.Header().Set("X-Payment-Amount", "0.0001")
+		w.Header().Set("X-Payment-Currency", "SOL")
+		w.Header().Set("X-Payment-Recipient", h.x402Config.Recipient)
+		w.Header().Set("X-Payment-Timestamp", string(time.Now().Unix()))
 		w.WriteHeader(http.StatusPaymentRequired)
 
-		// 构建 x402 支付信息
+		// 构建 x402 响应体
 		x402Payment := map[string]interface{}{
-			"PaymentAddress":  payment.UserAddress,
-			"MarketId":        payment.MarketID,
-			"PredictionLogID": payment.PredictionLogID,
-			"memo":            cacheKey,
-			"Amount":          0.0001,
-			"Currency":        "sol",
-			"Recipient":       h.x402Config.Recipient,
+			"error": "payment required",
 		}
 		json.NewEncoder(w).Encode(x402Payment)
 		return

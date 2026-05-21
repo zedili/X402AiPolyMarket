@@ -34,7 +34,7 @@ type AIPredictionLog struct {
 	CacheHit     bool  `gorm:"type:boolean;default:false" json:"cache_hit"` // 是否命中缓存
 
 	// 状态和错误
-	Status       uint8   `gorm:"type:tinyint unsigned;default:0;index:idx_status" json:"status"` // 状态：0-成功 1-失败
+	Status       uint8   `gorm:"type:tinyint unsigned;default:0;index:idx_status" json:"status"` // 状态：0-待预测 1-成功 2-失败
 	ErrorMessage *string `gorm:"type:text" json:"error_message,omitempty"`                       // 错误信息
 
 	// 元数据
@@ -42,6 +42,7 @@ type AIPredictionLog struct {
 
 	// 时间信息
 	CreatedAt time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP;index:idx_created_at" json:"created_at"`
+	UpdatedAt time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
 // TableName 指定表名
@@ -101,8 +102,9 @@ const (
 
 // 状态常量
 const (
-	StatusSuccess uint8 = 0 // 成功
-	StatusFailed  uint8 = 1 // 失败
+	AIPrediStatusPending uint8 = 0 // 待预测
+	AIPrediStatusSuccess uint8 = 1 // 成功
+	AIPrediStatusFailed  uint8 = 2 // 失败
 )
 
 // IsStreamResult 判断是否为流式结果

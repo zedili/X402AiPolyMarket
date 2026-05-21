@@ -7,6 +7,7 @@ type Payment struct {
 	ID          uint64 `gorm:"primaryKey;autoIncrement" json:"id"`
 	UserAddress string `gorm:"type:varchar(42);not null;index:idx_user_address" json:"user_address"`
 	MarketID    uint64 `gorm:"type:bigint unsigned;not null;index:idx_market_id" json:"market_id"`
+	CacheKey    string `gorm:"type:varchar(255);not null;index:idx_cache_key" json:"cache_key"` // 缓存键（预测唯一标识）
 
 	// 🔑 关联预测记录
 	PredictionLogID *uint64 `gorm:"type:bigint unsigned;index:idx_prediction_log_id" json:"prediction_log_id,omitempty"`
