@@ -1,12 +1,18 @@
 // AI预测相关API
 import { request } from '../client';
 import { callDeepSeek, callDeepSeekStream } from './deepseek';
+import { WalletAdapter } from '../../x402-client';
 import { marketApi } from './market';
 import type {
   AIPredictionResponse,
   AIAccuracyResponse,
   MarketDetailResponse,
 } from '../types';
+import { set } from 'zod';
+import { adapter } from 'next/dist/server/web/adapter';
+
+
+
 
 // ========== 工具函数：解析 DeepSeek 纯文本为结构化数据 ==========
 
@@ -119,6 +125,9 @@ function parseTextToPartialPrediction(
 }
 
 export const aiApi = {
+
+
+
   // 流式获取AI预测（调用 DeepSeek API Stream）
   getPredictionStream: async (
     marketId: number,
@@ -183,6 +192,8 @@ ${market.is_featured ? '【精选市场】' : ''}
 
     let accumulatedContent = '';
     let lastSerializedPartial: string | null = null;
+
+
 
     try {
       await callDeepSeekStream(

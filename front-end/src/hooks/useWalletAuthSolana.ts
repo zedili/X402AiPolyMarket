@@ -5,12 +5,14 @@ import { useEffect, useRef } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { useAuth } from './useAuth';
 import { authApi } from '@/lib/api';
+import { x402Client } from '@/lib/x402-client';
+
 
 /**
  * Hook to automatically handle backend login/logout based on wallet connection status
  */
 export function useWalletAuthSolana() {
-  const { publicKey, connected, signMessage } = useWallet();
+  const { publicKey, connected, signMessage, sendTransaction } = useWallet();
   const { user, isAuthenticated, login, logout } = useAuth();
   const isProcessingRef = useRef(false);
   // const lastAddressRef = useRef<string | undefined>(undefined);
@@ -32,6 +34,10 @@ export function useWalletAuthSolana() {
         console.log('Wallet disconnected, logging out...');
         logout();
       }
+
+      // 断开连接，清空钱包信息
+      x402Client.setWalletAuthInfo(null);
+
       return;
     }
 
@@ -40,6 +46,14 @@ export function useWalletAuthSolana() {
 
     // 2、如果已经连接，并且地址没有发生变化，且已经认证了，不需要重复登录
     if (isAuthenticated && user && user.wallet_address.toLowerCase() === address.toLowerCase()){
+      // 更新钱包信息（可能 signMessage 和 sendTransaction 发生了变化） 
+      x402Client.setWalletAuthInfo({
+        publicKey,
+        connected,
+        sendTransaction,
+        signMessage,
+       });
+
         return;
     }
 
@@ -72,6 +86,15 @@ export function useWalletAuthSolana() {
             chain_type: 'SOLANA',
           });
           console.log('Auto login successful');
+
+          // 登录成功后，设置 AI API 的钱包认证信息
+          x402Client.setWalletAuthInfo({
+            publicKey,
+            connected,
+            sendTransaction,
+            signMessage,
+          });
+
         }catch (error: any) { 
           console.error('Auto login failed:', error);
         }finally {
@@ -80,6 +103,9 @@ export function useWalletAuthSolana() {
       }
 
       handleAutoLogin();
+
+      
+
     }
 
   }, 
