@@ -56,6 +56,10 @@ export interface WalletAdapter {
   signMessage?: (message: Uint8Array) => Promise<Uint8Array>;
 }
 
+// 定义登出回调类型
+type LogoutCallback = () => void;
+let onLogoutRequired: LogoutCallback | null = null;
+
 export class X402Client {
   // mainnet	https://api.mainnet.solana.com
   // devnet	https://api.devnet.solana.com
@@ -67,6 +71,28 @@ export class X402Client {
     this.rpcUrl = rpcUrl;
     this.wsUrl = wsUrl;
     this.connection = new Connection(rpcUrl);
+  }
+
+    /**
+   * 注册当检测到登录过期(如 code 1002)时触发的回调
+   */
+  setLogoutHandler(callback: LogoutCallback) {
+    onLogoutRequired = callback;
+  }
+
+  /**
+   * 触发登出流程
+   */
+  private triggerLogout() {
+    if (onLogoutRequired) {
+      console.log('X402Client: Triggering logout due to auth error...');
+      onLogoutRequired();
+    } else {
+      console.warn('X402Client: No logout handler registered.');
+    }
+    
+    // 同时清空本地的钱包适配器引用
+    this.setWalletAuthInfo(null);
   }
 
   setWalletAuthInfo(adapter: WalletAdapter | null = null) {
@@ -139,7 +165,7 @@ export class X402Client {
       // console.log('Payment required:', paymentRequest);
 
       // 3、调用 solana/kit 创建并发送交易，获取真实签名
-      const signature = await this.createAndSendTransaction(paymentRequest);
+      const [signature, memo] = await this.createAndSendTransaction(paymentRequest);
 
       if (!signature) {
         throw new Error('Failed to create payment transaction');
@@ -151,6 +177,7 @@ export class X402Client {
       headers.set('X-Payment-Signature', signature);
       headers.set('X-Payment-Amount', paymentRequest.amount.toString());
       headers.set('X-Payment-Recipient', paymentRequest.recipient);
+      headers.set('X-Payment-Memo', memo);
 
       response = await fetch(url, {
         ...options,
@@ -158,6 +185,16 @@ export class X402Client {
       });
     }
 
+    // if (response.ok) {
+    //   const responseClone = response.clone();
+    //   const data = await responseClone.json();
+    //   if (data.code === 1002) {   // 登录过期
+    //     // 重置钱包认证信息，触发前端登录流程
+    //     this.triggerLogout(); // 触发全局登出
+    //     throw new Error('Session expired. Please reconnect wallet.');
+    //   }
+    //   throw new Error(`HTTP error! status: ${response}`);
+    // }
     return response;
   }
 
@@ -165,7 +202,7 @@ export class X402Client {
 
   private async createAndSendTransaction(
     paymentRequest: X402PaymentRequest,
-  ): Promise<string> {
+  ): Promise<[string, string]> {
 
     if (paymentRequest.memo === undefined) {
       throw new Error('Payment request must include a memo');
@@ -213,9 +250,9 @@ export class X402Client {
 
     // 4、添加 memo 指令
     if (paymentRequest.memo) {
-      // transaction.add(
-      //     createMemoInstruction(paymentRequest.memo)
-      // );
+      transaction.add(
+          createMemoInstruction(paymentRequest.memo)
+      );
     }
 
     // 5、模拟交易判断是否可能成功，避免用户支付后交易失败的情况；提高链上成功率
@@ -249,7 +286,7 @@ export class X402Client {
         });
        // 6、等待交易确认
       await this.connection.confirmTransaction(signature, 'confirmed');
-      return signature;
+      return [signature, paymentRequest.memo];
     } catch (error) {
       console.error('Error sending transaction:', error);
       throw error;

@@ -5,6 +5,7 @@ import (
 	"X402AiPolyMarket/PolyMarket/internal/logic/aiPrediction"
 	"X402AiPolyMarket/PolyMarket/internal/middleware"
 	"X402AiPolyMarket/PolyMarket/internal/model"
+	"X402AiPolyMarket/PolyMarket/internal/payment"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
 	"bufio"
 	"bytes"
@@ -72,6 +73,55 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	if !ok || userAddress == "" {
 		utils.Unauthorized(w, "User not authenticated")
 		return
+	}
+
+	// 检查是否携带支付签名（支付成功后的回调）
+	paymentSignature := r.Header.Get("X-Payment-Signature")
+
+	if paymentSignature != "" {
+		logger.Infof("用户 %s 支付成功，触发 x402 支付流程", userAddress)
+		// 获取更多信息
+		paymentMemo := r.Header.Get("X-Payment-Memo")
+		paymentRecipient := r.Header.Get("X-Payment-Recipient")
+
+		if paymentRecipient != h.x402Config.Recipient {
+			logger.Errorf("用户 %s 支付成功，触发 x402 支付流程，但支付信息错误", userAddress)
+			utils.ServerError(w, "payment info failed")
+			return
+		}
+
+		if paymentMemo == "" {
+			logger.Errorf("用户 %s 支付成功，触发 x402 支付流程，但缺少必要信息", userAddress)
+			// 缺少必要信息
+			utils.ServerError(w, "payment info failed")
+			return
+		}
+		//	paymentSignature 是链上交易签名
+		err := aiPrediction.
+			NewPredictionPaymentLogic(r.Context()).
+			UpdatePaymentTxHash(paymentMemo, userAddress, paymentSignature)
+
+		if err != nil {
+			utils.ServerError(w, "payment info failed")
+			return
+		}
+
+		//
+		// 拿到链上的验证信息，更新到数据库
+		verifyPayment, err := payment.NewPaymentVerifier(h.x402Config.RpcUrl, h.x402Config.Recipient).
+			VerifyPayment(r.Context(), paymentSignature)
+
+		if err != nil {
+			utils.ServerError(w, "verify payment failed")
+			return
+		}
+
+		err = aiPrediction.NewPredictionPaymentLogic(r.Context()).
+			UpdatePaymentStatus(paymentMemo, userAddress, paymentSignature, &verifyPayment.Payer, &verifyPayment.Recipient)
+		if err != nil {
+			utils.ServerError(w, "update payment status failed")
+			return
+		}
 	}
 
 	// 1. 读取请求体
@@ -291,6 +341,8 @@ func (h *DeepSeekProxyHandler) serveCachedStream(w http.ResponseWriter, r *http.
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no") // 🔑 禁用 Nginx 缓冲
+	//w.Header().Set("Transfer-Encoding", "chunked") // 🔑 使用分块传输
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
@@ -298,7 +350,13 @@ func (h *DeepSeekProxyHandler) serveCachedStream(w http.ResponseWriter, r *http.
 		return
 	}
 
+	// 🔑 先发送一个注释行，触发浏览器开始接收
+	fmt.Fprint(w, ": connected\n\n")
+	flusher.Flush()
+
 	for i, ev := range cv.Events {
+		sendTime := time.Now()
+
 		select {
 		case <-r.Context().Done(): // 客户端断开或者超时，立即退出
 			return
@@ -306,17 +364,23 @@ func (h *DeepSeekProxyHandler) serveCachedStream(w http.ResponseWriter, r *http.
 		}
 
 		if i > 0 && i < len(cv.Delays) {
+			logx.Infof("等待 %.2f ms 后发送第 %d 个事件",
+				float64(cv.Delays[i])/1e6, i+1)
 			timer := time.NewTimer(cv.Delays[i]) // 按照原延迟等待
 			select {
 			case <-timer.C:
 			case <-r.Context().Done(): // 客户端断开或者超时，停止定时器
 				timer.Stop()
 				return
-			default:
 			}
 		}
 		fmt.Fprintf(w, "data: %s\n\n", ev.Data)
-		flusher.Flush()
+		flusher.Flush() // 🔑 每次发送后立即刷新
+
+		actualDelay := time.Since(sendTime)
+		logx.Infof("✅ 已发送第 %d 个事件，实际延迟: %.2f ms",
+			i+1, float64(actualDelay)/1e6)
+
 	}
 }
 

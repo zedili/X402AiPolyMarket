@@ -139,26 +139,21 @@ export async function callDeepSeekStream(
   };
 
   try {
-    // 添加认证token
-  // // 认证token
-  const token = AuthManager.getAccessToken();
-  const response = await x402Client.fetchWithPayment(DEEPSEEK_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(requestBody),
-  });
-    // const response = await fetch(DEEPSEEK_API_URL, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     // 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
-    //     'Authorization': `Bearer ${token}`,
-    //   },
-    //   body: JSON.stringify(requestBody),
-    // });
+      // 添加认证token
+    // // 认证token
+    const token = AuthManager.getAccessToken();
+    const response = await x402Client.
+      fetchWithPayment(DEEPSEEK_API_URL, 
+              {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+              },
+              body: JSON.stringify(requestBody),
+            }
+
+      );
   
     if (!response.ok) {
       const errorText = await response.text();
@@ -174,18 +169,50 @@ export async function callDeepSeekStream(
     let fullContent = '';
     let fullReasoning = '';
 
+    // 1、创建缓冲区，用于存储未完整的JSON字符串
+    let buffer = "";
     try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+              
+          if (done) {
+            // 流结束，处理剩余缓冲区内容
+            if (buffer.trim().length > 0) {
+              processLine(buffer);
+            }
+            break;
+          }
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n').filter(line => line.trim());
+          // 2、解码当前块并追加到缓冲区
+          buffer += decoder.decode(value, { stream: true });
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
+          // 3、按行分割缓冲区，处理完整的行
+          let parts = buffer.split('\n\n');
+
+          // 4、最后一行可能不完整，保留在缓冲区中
+          buffer = parts.pop() || "";
+
+          // 5、处理完整的行
+          for (const part of parts) {
+            if (part.trim().length > 0) {
+              processLine(part);
+            }
+          }
+        }
+    }finally {
+      reader.releaseLock();
+    }
+
+    //  定义处理行的函数
+    function processLine(line: string) { 
+
+      // 拆分多行（防止一个 part 包含多个 data 行）
+      const lines = line.split('\n').filter(l => l.trim().length > 0);
+
+      for (const l of lines) {
+        if (l.startsWith('data: ')) {
+          const data = l.slice(6);
+          if (data === '[DONE]') continue;
 
             try {
               const parsed: StreamChunk = JSON.parse(data);
@@ -210,17 +237,19 @@ export async function callDeepSeekStream(
             }
           }
         }
-      }
-    } finally {
-      reader.releaseLock();
+
+
     }
-  } catch (error) {
+
+        
+        
+
+  }catch (error) {
     const err = error instanceof Error ? error : new Error('未知错误');
     if (onError) {
       onError(err);
     } else {
       throw err;
-    }
+    } 
+  }   
   }
-}
-

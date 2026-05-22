@@ -153,3 +153,8 @@ func (p *Payment) MarkAsRefunded(reason string) {
 	p.Status = PaymentStatusRefunded
 	p.ErrorMessage = &reason
 }
+
+// 标记为支付中
+func (p *Payment) MarkAsPending() {
+	p.Status = PaymentStatusPending
+}

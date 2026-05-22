@@ -194,14 +194,14 @@ ${market.is_featured ? '【精选市场】' : ''}
     let lastSerializedPartial: string | null = null;
 
 
-
     try {
+    
       await callDeepSeekStream(
         userPrompt,
         systemPrompt,
         (content, reasoning) => {
           accumulatedContent = content;
-
+          
           // 基于当前完整文本做一次解析，形成部分数据（支持流式逐步完善）
           const partialData = parseTextToPartialPrediction(accumulatedContent, marketId);
 

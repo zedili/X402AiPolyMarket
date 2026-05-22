@@ -6,6 +6,7 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { useAuth } from './useAuth';
 import { authApi } from '@/lib/api';
 import { x402Client } from '@/lib/x402-client';
+import { disconnect } from 'process';
 
 
 /**
@@ -26,6 +27,15 @@ export function useWalletAuthSolana() {
    * 3、组件卸载钱会执行清理函数（如果回调函数返回一个清理函数）。
    * 
    */
+  useEffect(() => {
+    // 注册全局登出回调
+    x402Client.setLogoutHandler(() => {
+      console.log('Logout required by X402Client');
+      logout();
+      disconnect();
+      x402Client.setWalletAuthInfo(null);});
+    }, [connected, logout]);
+
   useEffect(() => {
     // 1、断开连接时，登出
     if (!connected || !publicKey) {

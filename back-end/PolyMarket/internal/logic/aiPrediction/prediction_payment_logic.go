@@ -30,6 +30,7 @@ func NewPredictionPaymentLogic(ctx context.Context) *PredictionPaymentLogic {
  * @return error 错误
  */
 func (l *PredictionPaymentLogic) ChenckUserPaidPrediction(userAddress string, cacheKey string) (bool, *model.Payment, error) {
+	//cacheKey = "deepseek:dfae6c7f6a8ed33f35c636900c8fb33852b813f6702fd8e30b2661faa8d116c0" // TODO: 临时测试
 	var payment model.Payment
 	// 1、先检查是否存在支付记录
 	err := model.DB.Where("user_address = ? and cache_key = ?",
@@ -95,4 +96,46 @@ func (l *PredictionPaymentLogic) CreatePendingPayment(userAddress string, market
 	l.Infof("创建支付记录成功，支付ID: %d，用户: %s，金额: %.2f %s", payment.ID, userAddress, amount, currency)
 	return &payment, err
 
+}
+
+func (l *PredictionPaymentLogic) UpdatePaymentTxHash(cacheKey string, userAddress string, txHash string) error {
+	payment := model.Payment{}
+	err := model.DB.Where("cache_key = ? and user_address = ?", cacheKey, userAddress).
+		Order("id DESC").
+		First(&payment).Error
+	if err != nil {
+		l.Errorf("Failed to find payment: %v", err)
+		return err
+	}
+
+	payment.TxHash = &txHash
+
+	err = model.DB.Save(&payment).Error
+	if err != nil {
+		l.Errorf("Failed to update payment: %v", err)
+		return err
+	} else {
+		l.Infof("更新支付记录成功，支付ID: %d，用户: %s，交易哈希: %s", payment.ID, userAddress, txHash)
+		return nil
+	}
+
+}
+
+// 根据cacheKey、userAddress、txHash 更新支付记录为已支付状态
+func (l *PredictionPaymentLogic) UpdatePaymentStatus(cacheKey, userAddress, txHash string, fromAddress *string, toAddress *string) error {
+	payment := model.Payment{}
+	err := model.DB.Where("cache_key = ? AND user_address = ? and tx_hash = ?", cacheKey, userAddress, txHash).
+		Order("id DESC").
+		First(&payment).Error
+
+	payment.FromAddress = fromAddress
+	payment.ToAddress = toAddress
+	payment.MarkAsPaid(txHash, 0)
+	err = model.DB.Save(&payment).Error
+	if err != nil {
+		logx.Errorf("Update payment status failed: %v", err)
+		return err
+	}
+	logx.Infof("Update payment status success: %v", payment)
+	return nil
 }
