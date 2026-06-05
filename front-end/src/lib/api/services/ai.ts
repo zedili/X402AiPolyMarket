@@ -1,7 +1,7 @@
 // AI预测相关API
 import { request } from '../client';
 import { callDeepSeek, callDeepSeekStream } from './deepseek';
-import { WalletAdapter } from '../../x402-client';
+import { WalletAdapter } from '../../x402-client-solana';
 import { marketApi } from './market';
 import type {
   AIPredictionResponse,

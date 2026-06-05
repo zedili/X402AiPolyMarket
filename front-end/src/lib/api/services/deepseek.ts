@@ -1,5 +1,6 @@
 import { AuthManager } from '../auth';
-import { x402Client,  WalletAdapter } from '../../x402-client';
+// import { x402Client } from '../../x402-client-solana';
+import { x402PolygonClient } from '../../x402-client-polygon';
 import { X } from 'lucide-react';
 
 // DeepSeek API 服务
@@ -77,7 +78,7 @@ export async function callDeepSeek(
 
   // // 认证token
   const token = AuthManager.getAccessToken();
-  const response = await x402Client.fetchWithPayment(DEEPSEEK_API_URL, {
+  const response = await x402PolygonClient.fetchWithPayment(DEEPSEEK_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -142,7 +143,7 @@ export async function callDeepSeekStream(
       // 添加认证token
     // // 认证token
     const token = AuthManager.getAccessToken();
-    const response = await x402Client.
+    const response = await x402PolygonClient.
       fetchWithPayment(DEEPSEEK_API_URL, 
               {
               method: 'POST',

@@ -31,8 +31,8 @@ export default function RootLayout({
       </head>
       <body>
         <ErrorBoundary>
-          {/* <WalletProvider> */}
-          <SolanaProviders>
+          <WalletProvider>
+          {/* <SolanaProviders> */}
             <ThemeProvider defaultTheme="light" switchable={true}>
               <TooltipProvider>
                 <Toaster />
@@ -40,9 +40,9 @@ export default function RootLayout({
                 <Layout>{children}</Layout>
               </TooltipProvider>
             </ThemeProvider>
-          </SolanaProviders>
+          {/* </SolanaProviders> */}
 
-          {/* </WalletProvider> */}
+          </WalletProvider>
         </ErrorBoundary>
       </body>
     </html>

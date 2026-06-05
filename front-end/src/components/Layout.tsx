@@ -81,13 +81,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-2">
               <ThemeToggle />
-              {/* <ConnectButton
+              <ConnectButton
                 chainStatus="icon"
                 showBalance={false}
                 accountStatus="address"
-              /> */}
-              <WalletMultiButton />
-              {/* <WalletLogin /> */}
+              /> {/*  连接 Metamask 等 EVM 钱包的组件 */}
+              {/* <WalletMultiButton />  // 连接 Solana 钱包的组件 */}
+              
             </div>
             <button
               className="md:hidden p-2 text-muted-foreground hover:text-foreground"

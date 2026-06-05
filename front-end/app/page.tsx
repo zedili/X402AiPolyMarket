@@ -74,53 +74,53 @@ export default function Home() {
   }, [selectedCategory, searchQuery, page, pageSize, sort, order]);
 
   // 为每个市场获取AI预测
-  useEffect(() => {
-    markets.forEach((market) => {
-      // 如果已经有预测数据或正在加载，跳过
-      if (aiPredictions[market.id] || aiLoadingStates[market.id]) {
-        return;
-      }
+  // useEffect(() => {
+  //   markets.forEach((market) => {
+  //     // 如果已经有预测数据或正在加载，跳过
+  //     if (aiPredictions[market.id] || aiLoadingStates[market.id]) {
+  //       return;
+  //     }
 
-      // 如果市场已经有AI预测数据，直接使用
-      if (market.ai_prediction !== undefined && market.confidence !== undefined) {
-        setAiPredictions((prev) => ({
-          ...prev,
-          [market.id]: {
-            market_id: market.id,
-            prediction_value: market.ai_prediction,
-            confidence: market.confidence,
-            suggests: market.suggests,
-          },
-        }));
-        return;
-      }
+  //     // 如果市场已经有AI预测数据，直接使用
+  //     if (market.ai_prediction !== undefined && market.confidence !== undefined) {
+  //       setAiPredictions((prev) => ({
+  //         ...prev,
+  //         [market.id]: {
+  //           market_id: market.id,
+  //           prediction_value: market.ai_prediction,
+  //           confidence: market.confidence,
+  //           suggests: market.suggests,
+  //         },
+  //       }));
+  //       return;
+  //     }
 
-      // 否则发起AI预测请求
-      setAiLoadingStates((prev) => ({ ...prev, [market.id]: true }));
+  //     // 否则发起AI预测请求
+  //     setAiLoadingStates((prev) => ({ ...prev, [market.id]: true }));
       
-      aiApi.getPredictionStream(
-        market.id,
-        (partialData) => {
-          setAiPredictions((prev) => ({
-            ...prev,
-            [market.id]: { ...prev[market.id], ...partialData },
-          }));
-          setAiLoadingStates((prev) => ({ ...prev, [market.id]: false }));
-        },
-        (fullData) => {
-          setAiPredictions((prev) => ({
-            ...prev,
-            [market.id]: fullData,
-          }));
-          setAiLoadingStates((prev) => ({ ...prev, [market.id]: false }));
-        },
-        (err) => {
-          console.error(`Failed to get AI prediction for market ${market.id}:`, err);
-          setAiLoadingStates((prev) => ({ ...prev, [market.id]: false }));
-        }
-      );
-    });
-  }, [markets]);
+  //     aiApi.getPredictionStream(
+  //       market.id,
+  //       (partialData) => {
+  //         setAiPredictions((prev) => ({
+  //           ...prev,
+  //           [market.id]: { ...prev[market.id], ...partialData },
+  //         }));
+  //         setAiLoadingStates((prev) => ({ ...prev, [market.id]: false }));
+  //       },
+  //       (fullData) => {
+  //         setAiPredictions((prev) => ({
+  //           ...prev,
+  //           [market.id]: fullData,
+  //         }));
+  //         setAiLoadingStates((prev) => ({ ...prev, [market.id]: false }));
+  //       },
+  //       (err) => {
+  //         console.error(`Failed to get AI prediction for market ${market.id}:`, err);
+  //         setAiLoadingStates((prev) => ({ ...prev, [market.id]: false }));
+  //       }
+  //     );
+  //   });
+  // }, [markets]);
 
   // 注意：由于API已经处理了筛选和搜索，这里不需要再次过滤
   // 但如果需要客户端二次过滤，可以保留这个逻辑

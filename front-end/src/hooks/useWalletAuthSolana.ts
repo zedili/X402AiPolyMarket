@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { useAuth } from './useAuth';
 import { authApi } from '@/lib/api';
-import { x402Client } from '@/lib/x402-client';
+import { x402Client } from '@/lib/x402-client-solana';
 import { disconnect } from 'process';
 
 

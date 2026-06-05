@@ -9,8 +9,8 @@ import { useWalletAuthSolana  } from '@/hooks/useWalletAuthSolana';
  * login when wallet connects and logout when wallet disconnects
  */
 export default function WalletAuthHandler() {
-  // useWalletAuth();
-  useWalletAuthSolana();
+  useWalletAuth();  // metamask 等 EVM 钱包的认证处理
+  // useWalletAuthSolana();   // solana 钱包的认证处理
   return null;
 }
 

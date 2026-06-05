@@ -1,17 +1,22 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useAccount, useSignMessage } from 'wagmi';
+import { useAccount, useSignMessage, useWalletClient } from 'wagmi';
 import { useAuth } from './useAuth';
 import { authApi } from '@/lib/api';
+import { x402PolygonClient } from '@/lib/x402-client-polygon';
+import { X } from 'lucide-react';
+
 
 /**
  * Hook to automatically handle backend login/logout based on wallet connection status
  */
 export function useWalletAuth() {
+  // 获取钱包连接状态和地址
+  const { data: walletClient } = useWalletClient(); // 获取钱包客户端
   const { address, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
-  const { user, isAuthenticated, login, logout } = useAuth();
+  const { refreshUser, user, isAuthenticated, login, logout } = useAuth();
   const isProcessingRef = useRef(false);
   const lastAddressRef = useRef<string | undefined>(undefined);
   const rejectedAddressesRef = useRef<Set<string>>(new Set());
@@ -32,7 +37,9 @@ export function useWalletAuth() {
         console.log('Wallet disconnected, logging out...');
         logout();
       }
+      x402PolygonClient.setWalletAuthInfo(null); // 清除 x402 钱包信息
       lastAddressRef.current = undefined;
+      // logout();
       return;
     }
 
@@ -64,7 +71,7 @@ export function useWalletAuth() {
           console.log('Wallet connected, starting auto login...');
           
           // 1. 向后端请求 nonce
-          const nonceResp = await authApi.getNonce({ wallet_address: address });
+          const nonceResp = await authApi.getNonce({ wallet_address: address, chain_type: 'EVM' });
 
           // 2. 使用钱包对 nonce 进行签名
           const signature = await signMessageAsync({
@@ -76,11 +83,23 @@ export function useWalletAuth() {
             wallet_address: address,
             nonce: nonceResp.nonce,
             signature,
+            chain_type: 'EVM',
           });
 
           console.log('Auto login successful');
           // 登录成功，清除拒绝记录
           rejectedAddressesRef.current.delete(address.toLowerCase());
+
+          // 登录成功后设置 x402 钱包信息
+          if (walletClient && walletClient.account) {
+            x402PolygonClient.setWalletAuthInfo({
+              account: walletClient.account,
+              address: walletClient.account.address,
+              connected: true,
+              walletClient,
+            });
+          }
+          
         } catch (error: any) {
           console.error('Auto login failed:', error);
           // 如果用户拒绝签名，记录这个地址，不再自动尝试
@@ -100,11 +119,25 @@ export function useWalletAuth() {
       };
 
       handleAutoLogin();
+
     } else if (isAuthenticated && user && user.wallet_address.toLowerCase() === address.toLowerCase()) {
       // 已经登录且地址匹配，更新引用
       lastAddressRef.current = address;
       // 清除拒绝记录（用户可能手动登录了）
       rejectedAddressesRef.current.delete(address.toLowerCase());
+
+      // 刷新 x402 钱包信息
+      if (walletClient && walletClient.account) {
+        x402PolygonClient.setWalletAuthInfo({
+          account: walletClient.account,
+          address: walletClient.account.address,
+          connected: true,
+          walletClient,
+        });
+      }else {
+        x402PolygonClient.setWalletAuthInfo(null); // 如果没有 walletClient，清除 x402 钱包信息
+        logout();
+      }
     }
   }, 
   [isConnected, address, isAuthenticated, user, login, logout, signMessageAsync] // 依赖项数组
