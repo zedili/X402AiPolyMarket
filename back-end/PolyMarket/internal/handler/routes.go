@@ -199,14 +199,23 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		*/
 	)
 
+	// =============== ai 预测接口配置
+
 	// 自定义认证中间件
 	authMiddleware := middleware.NewAuthMiddleware(serverCtx.Config.Auth)
+
+	// deepseek 代理 - 应用 x402 支付中间件
+	deepseekHandler := deepseek.NewDeepSeekProxyHandler(serverCtx).Handle
+
+	// 创建 x402 中间件
+	x402MW := middleware.X402Middleware(serverCtx.Config.X402Config)
+	protectedHandler := authMiddleware.Handle(x402MW(deepseekHandler))
 
 	server.AddRoute(rest.Route{
 		// deepseek 预测
 		Method:  http.MethodPost,
 		Path:    "/v1/chat/completions",
-		Handler: authMiddleware.Handle(deepseek.NewDeepSeekProxyHandler(serverCtx).Handle),
+		Handler: protectedHandler,
 	},
 		rest.WithTimeout(0),
 		rest.WithPrefix("/api/v1"),

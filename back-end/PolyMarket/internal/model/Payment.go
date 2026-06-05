@@ -6,20 +6,20 @@ import "time"
 type Payment struct {
 	ID          uint64 `gorm:"primaryKey;autoIncrement" json:"id"`
 	UserAddress string `gorm:"type:varchar(42);not null;index:idx_user_address" json:"user_address"`
-	MarketID    uint64 `gorm:"type:bigint unsigned;not null;index:idx_market_id" json:"market_id"`
+	MarketID    uint64 `gorm:"type:bigint unsigned;index:idx_market_id" json:"market_id"`
 	CacheKey    string `gorm:"type:varchar(255);not null;index:idx_cache_key" json:"cache_key"` // 缓存键（预测唯一标识）
 
 	// 🔑 关联预测记录
 	PredictionLogID *uint64 `gorm:"type:bigint unsigned;index:idx_prediction_log_id" json:"prediction_log_id,omitempty"`
 
 	// 预测信息
-	Prediction     uint8   `gorm:"type:tinyint unsigned;not null" json:"prediction"` // 0-NO 1-YES
-	PredictionData *string `gorm:"type:text" json:"prediction_data,omitempty"`       // AI预测详情JSON
+	Prediction     uint8   `gorm:"type:tinyint unsigned" json:"prediction"`    // 0-NO 1-YES
+	PredictionData *string `gorm:"type:text" json:"prediction_data,omitempty"` // AI预测详情JSON
 
 	// 支付信息
-	PaymentAmount float64 `gorm:"type:decimal(20,8);not null" json:"payment_amount"`
-	Currency      string  `gorm:"type:varchar(20);default:'USDC'" json:"currency"`     // 支付代币类型
-	PaymentType   uint8   `gorm:"type:tinyint unsigned;default:0" json:"payment_type"` // 0-预测购买 1-订阅服务 2-其他
+	PaymentAmount string `gorm:"type:varchar(20);not null" json:"payment_amount"`
+	Currency      string `gorm:"type:varchar(20);default:'USDC'" json:"currency"`     // 支付代币类型
+	PaymentType   uint8  `gorm:"type:tinyint unsigned;default:0" json:"payment_type"` // 0-预测购买 1-订阅服务 2-其他
 
 	// 交易信息
 	TxHash      *string `gorm:"type:varchar(66);uniqueIndex:uk_tx_hash;index:idx_tx_hash" json:"tx_hash,omitempty"`
@@ -28,7 +28,7 @@ type Payment struct {
 	ToAddress   *string `gorm:"type:varchar(42)" json:"to_address,omitempty"`
 
 	// 支付状态
-	Status uint8 `gorm:"type:tinyint unsigned;default:0;index:idx_status" json:"status"` // 0-待支付 1-支付中 2-已支付 3-支付失败 4-已退款
+	Status uint8 `gorm:"type:tinyint unsigned;default:0;index:idx_status" json:"status"` // 0-已验证 1-已支付 2-支付失败 3-已退款
 
 	// 错误信息
 	ErrorMessage *string `gorm:"type:text" json:"error_message,omitempty"`
@@ -66,11 +66,10 @@ const (
 
 // 支付状态常量
 const (
-	PaymentStatusPending    uint8 = 0 // 待支付
-	PaymentStatusProcessing uint8 = 1 // 支付中
-	PaymentStatusPaid       uint8 = 2 // 已支付
-	PaymentStatusFailed     uint8 = 3 // 支付失败
-	PaymentStatusRefunded   uint8 = 4 // 已退款
+	PaymentStatusPending  uint8 = 0 // 已验证
+	PaymentStatusPaid     uint8 = 2 // 支付失败
+	PaymentStatusFailed   uint8 = 3 // 支付失败
+	PaymentStatusRefunded uint8 = 4 // 已退款
 )
 
 // IsCompleted 判断支付是否已完成（成功支付）
@@ -85,7 +84,7 @@ func (p *Payment) IsFailed() bool {
 
 // IsPending 判断支付是否待处理
 func (p *Payment) IsPending() bool {
-	return p.Status == PaymentStatusPending || p.Status == PaymentStatusProcessing
+	return p.Status == PaymentStatusPending || p.Status == PaymentStatusPending
 }
 
 // GetPredictionDirection 获取预测方向字符串
@@ -114,9 +113,7 @@ func (p *Payment) GetPaymentTypeString() string {
 func (p *Payment) GetStatusString() string {
 	switch p.Status {
 	case PaymentStatusPending:
-		return "待支付"
-	case PaymentStatusProcessing:
-		return "支付中"
+		return "已验证"
 	case PaymentStatusPaid:
 		return "已支付"
 	case PaymentStatusFailed:

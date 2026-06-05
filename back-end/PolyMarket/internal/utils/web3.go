@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -167,4 +168,46 @@ func decodeBase58(address string) ([]byte, error) {
 
 	return result, nil
 
+}
+
+// ParseUSDCPrice 解析 USDC 价格字符串 (例如 "$0.001" -> 1000 最小单位)
+func ParseUSDCPrice(priceStr string) (int64, error) {
+	// 移除 $ 符号
+	priceStr = strings.TrimPrefix(priceStr, "$")
+
+	// 转换为浮点数
+	price, err := strconv.ParseFloat(priceStr, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	// USDC 有 6 位小数，转换为最小单位
+	return int64(price * 1_000_000), nil
+}
+
+// FormatUSDCPrice 格式化 USDC 价格
+func FormatUSDCPrice(amount int64) string {
+	price := float64(amount) / 1_000_000
+	return "$" + strconv.FormatFloat(price, 'f', -1, 64)
+}
+
+// IsValidNetwork 验证 network ID 是否有效
+func IsValidNetwork(network string) bool {
+	validNetworks := map[string]bool{
+		"eip155:80002": true, // Amoy testnet
+		"eip155:137":   true, // Polygon mainnet
+	}
+	return validNetworks[network]
+}
+
+// GetFacilitatorURL 根据 network 获取 Facilitator URL
+func GetFacilitatorURL(network string) string {
+	switch network {
+	case "eip155:80002":
+		return "https://x402-amoy.polygon.technology"
+	case "eip155:137":
+		return "https://x402.polygon.technology"
+	default:
+		return "https://x402-amoy.polygon.technology" // 默认 testnet
+	}
 }

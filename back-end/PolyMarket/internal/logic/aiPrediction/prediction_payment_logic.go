@@ -77,25 +77,28 @@ func (l *PredictionPaymentLogic) ChenckUserPaidPrediction(userAddress string, ca
  * @return *model.Payment 预测支付记录
  * @return error 错误
  */
-func (l *PredictionPaymentLogic) CreatePendingPayment(userAddress string, marketId uint64, predictionLogId uint64, prediction uint8, amount float64, currency string) (*model.Payment, error) {
-	payment := model.Payment{
-		UserAddress:     userAddress,
-		MarketID:        marketId,
-		PredictionLogID: &predictionLogId,
-		Prediction:      prediction,
-		PaymentAmount:   amount,
-		Currency:        currency,
-		Status:          model.PaymentStatusPending,
-	}
-
-	err := model.DB.Create(&payment).Error
+func (l *PredictionPaymentLogic) UpdatePaymentInfo(userAddress string, paymentAmount string, currency string, cacheKey string) (*model.Payment, error) {
+	payment := model.Payment{}
+	err := model.DB.Where("cache_key = ? and user_address = ?", cacheKey, userAddress).
+		Order("id DESC").
+		First(&payment).Error
 	if err != nil {
-		l.Errorf("Failed to create payment: %v", err)
+		l.Errorf("Failed to find payment: %v", err)
 		return nil, err
 	}
-	l.Infof("创建支付记录成功，支付ID: %d，用户: %s，金额: %.2f %s", payment.ID, userAddress, amount, currency)
-	return &payment, err
 
+	err = model.DB.Model(&payment).
+		Updates(model.Payment{
+			Currency:      currency,
+			PaymentAmount: paymentAmount,
+		}).Error
+
+	if err != nil {
+		l.Errorf("Failed to update payment: %v", err)
+		return nil, err
+	}
+	l.Infof("更新支付记录成功，支付ID: %d，用户: %s，金额: %.2f %s", payment.ID, userAddress, paymentAmount, currency)
+	return &payment, err
 }
 
 func (l *PredictionPaymentLogic) UpdatePaymentTxHash(cacheKey string, userAddress string, txHash string) error {
@@ -108,9 +111,16 @@ func (l *PredictionPaymentLogic) UpdatePaymentTxHash(cacheKey string, userAddres
 		return err
 	}
 
-	payment.TxHash = &txHash
+	//payment.TxHash = &txHash
+	payment.MarkAsPaid(txHash, 0)
 
-	err = model.DB.Save(&payment).Error
+	err = model.DB.Model(&payment).
+		Updates(model.Payment{
+			TxHash:      &txHash,
+			PaidAt:      payment.PaidAt,
+			Status:      payment.Status,
+			BlockNumber: payment.BlockNumber,
+		}).Error
 	if err != nil {
 		l.Errorf("Failed to update payment: %v", err)
 		return err
@@ -119,23 +129,4 @@ func (l *PredictionPaymentLogic) UpdatePaymentTxHash(cacheKey string, userAddres
 		return nil
 	}
 
-}
-
-// 根据cacheKey、userAddress、txHash 更新支付记录为已支付状态
-func (l *PredictionPaymentLogic) UpdatePaymentStatus(cacheKey, userAddress, txHash string, fromAddress *string, toAddress *string) error {
-	payment := model.Payment{}
-	err := model.DB.Where("cache_key = ? AND user_address = ? and tx_hash = ?", cacheKey, userAddress, txHash).
-		Order("id DESC").
-		First(&payment).Error
-
-	payment.FromAddress = fromAddress
-	payment.ToAddress = toAddress
-	payment.MarkAsPaid(txHash, 0)
-	err = model.DB.Save(&payment).Error
-	if err != nil {
-		logx.Errorf("Update payment status failed: %v", err)
-		return err
-	}
-	logx.Infof("Update payment status success: %v", payment)
-	return nil
 }

@@ -74,8 +74,38 @@ DeepseekConfig:
   #  sk-3fa4d916c80347fdb5fec1eb05b39311
     ApiKey: "sk-3fa4d916c80347fdb5fec1eb05b39311"
 
+# ... existing code ...
+
 X402Config:
   Enable: true
-  Amount: 0.01
-  Recipient: Hk8as5BkVuhownGZUuRWa37SWnGgH1RtoWNpYqowyita
-  RpcUrl: https://api.devnet.solana.com
+#  FacilitatorUrl: "http://localhost:4022"
+  FacilitatorUrl: "https://x402-amoy.polygon.technology"  # Amoy testnet
+  # FacilitatorUrl: "https://x402.polygon.technology"     # Mainnet (生产环境)
+  DefaultNetwork: "eip155:80002"  # Amoy testnet network ID
+  # DefaultNetwork: "eip155:137"  # Polygon mainnet (生产环境)
+  DefaultScheme: "exact"
+  Routes:
+    "POST /api/v1/v1/chat/completions":
+      Accepts:
+        - Scheme: "exact"
+          Asset: "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582"
+          Price: "1000"
+          Network: "eip155:80002"
+          PayTo: "0x9030469B14bD60a825fADF3E75271a8d34947C5C"
+          Extra:
+            Name: "USDC"
+            Version: "2"
+      Description: "AI Prediction Service"
+      MimeType: "application/json"
+    "POST /api/v1/market/premium":
+      Accepts:
+        - Scheme: "exact"
+          Asset: "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582"
+          Price: "5000"
+          Network: "eip155:80002"
+          PayTo: "0x9030469B14bD60a825fADF3E75271a8d34947C5C"
+          Extra:
+              Name: "FiatTokenV2"
+              Version: "2"
+      Description: "Premium Market Data"
+      MimeType: "application/json"

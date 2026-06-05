@@ -1,7 +1,7 @@
 //go:build ignore
 // +build ignore
 
-// 这是一个示例文件，展示如何集成 X402 中间件
+// 这是一个示例文件，展示如何集成 x402 中间件
 // 注意：该文件仅用于文档示例，已通过 build tag 排除在编译之外。
 // 实际生效的路由定义在 routes.go 中。
 
@@ -17,7 +17,7 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
-	// 配置 X402 中间件
+	// 配置 x402 中间件
 	x402Config := middleware.X402Config{
 		Enabled:   true,
 		Amount:    0.001,                         // 0.001 SOL
@@ -25,8 +25,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		RPCURL:    "https://api.mainnet-beta.solana.com",
 	}
 
-	// 使用 X402 中间件包装处理器
-	x402Middleware := middleware.X402Middleware(x402Config)
+	// 使用 x402 中间件包装处理器
+	x402Middleware := middleware.X402MiddlewareDeprecated(x402Config)
 
 	server.AddRoutes(
 		[]rest.Route{
