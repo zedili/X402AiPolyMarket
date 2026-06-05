@@ -17,10 +17,11 @@ type StreamEvent struct {
 
 // CacheValue 缓存的值
 type CacheValue struct {
-	Type     CacheValueType
-	JsonBody []byte
-	Events   []StreamEvent
-	Delays   []time.Duration // 新增：每个事件与上一个事件的时间差（第一个为 0）
+	Type      CacheValueType
+	JsonBody  []byte
+	Events    []StreamEvent
+	Delays    []time.Duration // 新增：每个事件与上一个事件的时间差（第一个为 0）
+	FromCache bool            // 是否来自缓存
 }
 
 // ChatCache 缓存接口

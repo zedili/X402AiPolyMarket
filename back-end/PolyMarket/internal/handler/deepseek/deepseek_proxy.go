@@ -5,10 +5,12 @@ import (
 	"X402AiPolyMarket/PolyMarket/internal/logic/aiPrediction"
 	"X402AiPolyMarket/PolyMarket/internal/middleware"
 	"X402AiPolyMarket/PolyMarket/internal/model"
-	"X402AiPolyMarket/PolyMarket/internal/payment"
 	"X402AiPolyMarket/PolyMarket/internal/svc"
+	"X402AiPolyMarket/PolyMarket/internal/x402"
+	_ "X402AiPolyMarket/PolyMarket/internal/x402"
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,7 +24,6 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
-	"gorm.io/gorm"
 )
 
 type DeepSeekProxyHandler struct {
@@ -31,6 +32,7 @@ type DeepSeekProxyHandler struct {
 	singleFlight *cache.SingleFlight
 	httpClient   *http.Client
 	x402Config   config.X402Config
+	logger       logx.Logger
 }
 
 // ServeHTTP 实现 http.Handler 接口，这样就能直接用于 go-zero 的路由注册
@@ -47,10 +49,7 @@ func NewDeepSeekProxyHandler(svcCtx *svc.ServiceContext) *DeepSeekProxyHandler {
 	chatCache := cache.NewRedisCache(redisClient, "deepseek:cache") // Redis key 前缀
 
 	x402Config := config.X402Config{
-		Enable:    svcCtx.Config.X402Config.Enable,
-		Amount:    svcCtx.Config.X402Config.Amount,
-		Recipient: svcCtx.Config.X402Config.Recipient,
-		RpcUrl:    svcCtx.Config.X402Config.RpcUrl,
+		Enable: svcCtx.Config.X402Config.Enable,
 	}
 
 	return &DeepSeekProxyHandler{
@@ -60,6 +59,11 @@ func NewDeepSeekProxyHandler(svcCtx *svc.ServiceContext) *DeepSeekProxyHandler {
 		x402Config:   x402Config,
 		httpClient: &http.Client{
 			Timeout: 120 * time.Second,
+			Transport: &http.Transport{ // ✅ 添加 Transport 配置
+				MaxIdleConns:        100,
+				MaxIdleConnsPerHost: 20,
+				IdleConnTimeout:     90 * time.Second,
+			},
 		},
 	}
 }
@@ -73,55 +77,6 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	if !ok || userAddress == "" {
 		utils.Unauthorized(w, "User not authenticated")
 		return
-	}
-
-	// 检查是否携带支付签名（支付成功后的回调）
-	paymentSignature := r.Header.Get("X-Payment-Signature")
-
-	if paymentSignature != "" {
-		logger.Infof("用户 %s 支付成功，触发 x402 支付流程", userAddress)
-		// 获取更多信息
-		paymentMemo := r.Header.Get("X-Payment-Memo")
-		paymentRecipient := r.Header.Get("X-Payment-Recipient")
-
-		if paymentRecipient != h.x402Config.Recipient {
-			logger.Errorf("用户 %s 支付成功，触发 x402 支付流程，但支付信息错误", userAddress)
-			utils.ServerError(w, "payment info failed")
-			return
-		}
-
-		if paymentMemo == "" {
-			logger.Errorf("用户 %s 支付成功，触发 x402 支付流程，但缺少必要信息", userAddress)
-			// 缺少必要信息
-			utils.ServerError(w, "payment info failed")
-			return
-		}
-		//	paymentSignature 是链上交易签名
-		err := aiPrediction.
-			NewPredictionPaymentLogic(r.Context()).
-			UpdatePaymentTxHash(paymentMemo, userAddress, paymentSignature)
-
-		if err != nil {
-			utils.ServerError(w, "payment info failed")
-			return
-		}
-
-		//
-		// 拿到链上的验证信息，更新到数据库
-		verifyPayment, err := payment.NewPaymentVerifier(h.x402Config.RpcUrl, h.x402Config.Recipient).
-			VerifyPayment(r.Context(), paymentSignature)
-
-		if err != nil {
-			utils.ServerError(w, "verify payment failed")
-			return
-		}
-
-		err = aiPrediction.NewPredictionPaymentLogic(r.Context()).
-			UpdatePaymentStatus(paymentMemo, userAddress, paymentSignature, &verifyPayment.Payer, &verifyPayment.Recipient)
-		if err != nil {
-			utils.ServerError(w, "update payment status failed")
-			return
-		}
 	}
 
 	// 1. 读取请求体
@@ -143,85 +98,94 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 3. 检查是否流式请求
-	var temp struct{ Stream bool }
-	_ = json.Unmarshal(bodyBytes, &temp)
-
-	// 判断这个用户是否支付这预测key： cachekey
-	paid, payment, err := aiPrediction.
-		NewPredictionPaymentLogic(r.Context()).
-		ChenckUserPaidPrediction(userAddress, cacheKey)
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-
-		} else {
-			logger.Errorf("Failed to find payment: %v", err)
-			// 未找到预测支付记录
-			// 此时返回系统繁忙给前端
+	// 📌 检查支付状态
+	if middleware.GetX402Status(w) == middleware.CheckCacheKeyPayStatus {
+		// 未开启 x402
+		if !h.x402Config.Enable {
 			utils.ServerError(w, "System busy")
 			return
 		}
-	}
 
-	// 未开启 x402
-	if !h.x402Config.Enable {
-		utils.ServerError(w, "System busy")
-		return
-	}
+		// 判断这个用户是否支付这预测key： cachekey
+		paid, _, checkErr := aiPrediction.
+			NewPredictionPaymentLogic(r.Context()).
+			ChenckUserPaidPrediction(userAddress, cacheKey)
 
-	if !paid || payment == nil {
-		// 返回 x402 状态码给前端
-		// 🔑 介入 x402 协议：返回 402 状态码
-		logger.Infof("用户 %s 未支付预测 %s，触发 x402 支付流程", userAddress, cacheKey)
-
-		// 设置 http 响应码 为 402 、 支付信息
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("X-Payment-Required", "true")
-		w.Header().Set("X-Payment-Memo", cacheKey)
-		w.Header().Set("X-Payment-Amount", "0.0001")
-		w.Header().Set("X-Payment-Currency", "SOL")
-		w.Header().Set("X-Payment-Recipient", h.x402Config.Recipient)
-		w.Header().Set("X-Payment-Timestamp", string(time.Now().Unix()))
-		w.WriteHeader(http.StatusPaymentRequired)
-
-		// 构建 x402 响应体
-		x402Payment := map[string]interface{}{
-			"error": "payment required",
+		if !paid || checkErr != nil {
+			// 📌 如果还没有支付，返回到 x402 中间件，继续执行 x402 支付逻辑
+			return
 		}
-		json.NewEncoder(w).Encode(x402Payment)
+		// 📌 cachekey 已经支付,标记一下，然后放行
+		middleware.SetX402Status(w, middleware.CacheKeyPaid) // 设置当前状态为 paid
+		w.Header().Set("PAYMENT-STATUS", "PAID")
+		logger.Infof("用户已支付预测 key: %s", cacheKey)
+	}
+
+	// 📌 facilitator 验证通过，保存支付中的状态，从请求头拿到签名
+	var paymentSignature x402.PaymentSignature
+	if middleware.GetX402Status(w) == middleware.X402Verified {
+
+		paymentSignatureBase64 := r.Header.Get("Payment-Signature")
+		if paymentJson, err := base64.StdEncoding.DecodeString(paymentSignatureBase64); err == nil {
+
+			if err := json.Unmarshal(paymentJson, &paymentSignature); err != nil {
+				logger.Errorf("解析 PaymentSignature 失败: %v", err)
+				utils.ServerError(w, "System busy")
+				return
+			}
+		}
+		//	paymentSignature 是链上交易签名
+		_, creErr := aiPrediction.
+			NewPredictionPaymentLogic(r.Context()).
+			UpdatePaymentInfo(userAddress,
+				paymentSignature.Payload.Authorization.Value,
+				paymentSignature.Accepted.Extra.Name,
+				cacheKey)
+
+		if creErr != nil {
+			utils.ServerError(w, "System busy")
+			return
+		}
+		logger.Infof("x402 验证成功 key: %s：%s", cacheKey)
+		// 返回到x402 中间件， 继续执行 x402 逻辑
 		return
 	}
 
-	// ---- 用户支付了预测
+	// 📌 facilitator 结算成功
+	if middleware.GetX402Status(w) == middleware.X402SettleSuccess {
+		txHash := middleware.GetX402TxHash(w)
+		if txHash != "" {
+			//	paymentSignature 是链上交易签名
+			err = aiPrediction.
+				NewPredictionPaymentLogic(r.Context()).
+				UpdatePaymentTxHash(cacheKey, userAddress, txHash)
+			logger.Infof("x402 结算成功 key: %s, txHash: %s", cacheKey, txHash)
+		}
+	}
 
-	// 4. 先查缓存
-	if cached, ok := h.cache.Get(cacheKey); ok {
+	// 先检查缓存,命中及时返回缓存数据
+	if cv, ok := h.cache.Get(cacheKey); ok && cv != nil {
 		logger.Infof("DeepSeek cache hit: %s", cacheKey)
-		w.Header().Set("X-Cache", "HIT")
-		if cached.Type == cache.CacheValueJSON {
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(cached.JsonBody)
-		} else {
-			h.serveCachedStream(w, r, cached)
-		}
+		w.Header().Set("X-Cache", "HIT") // 命中缓存
+		h.serveCachedStream(w, r, cv)
 		return
 	}
-
-	// 5. 缓存未命中，使用单飞模式获取
 	logger.Infof("DeepSeek cache miss: %s", cacheKey)
-	w.Header().Set("X-Cache", "MISS")
+	//
 
+	// 📌📌📌 用户支付了预测
+	// 📌 单飞模式：先查询缓存，没有命中缓存，单飞模式调用 deepseek 进行预测并缓存
 	cacheValue, err := h.singleFlight.Do(cacheKey, func() (*cache.CacheValue, error) {
-		// 先再次检查缓存（防止并发时重复构建）
-		if cv, ok := h.cache.Get(cacheKey); ok {
+		// 双重检查（防止并发时重复构建）
+		if cv, ok := h.cache.Get(cacheKey); ok && cv != nil {
+			cv.FromCache = true
 			return cv, nil
 		}
-
-		if temp.Stream {
-			return h.fetchAndCacheStream(cacheKey, bodyBytes)
+		cv, err := h.fetchAndCacheStream(cacheKey, bodyBytes, r)
+		if err == nil && cv != nil {
+			cv.FromCache = false
 		}
-		return h.fetchAndCacheNonStream(cacheKey, bodyBytes)
+		return cv, err
 	})
 
 	if err != nil {
@@ -230,7 +194,21 @@ func (h *DeepSeekProxyHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if cacheValue == nil {
+		logger.Errorf("获取预测响应失败")
+		httpx.Error(w, errors.New("获取预测响应失败"))
+		return
+	}
+
 	// 返回响应
+	if cacheValue.FromCache {
+		logger.Infof("single flyght DeepSeek cache hit: %s", cacheKey)
+		w.Header().Set("X-Cache", "HIS") // 请求头标记：没有命中缓存
+	} else {
+		logger.Infof("single flyght DeepSeek cache miss: %s", cacheKey)
+		w.Header().Set("X-Cache", "MISS") // 请求头标记：没有命中缓存
+	}
+
 	if cacheValue.Type == cache.CacheValueJSON {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(cacheValue.JsonBody)
@@ -275,9 +253,13 @@ func (h *DeepSeekProxyHandler) fetchAndCacheNonStream(cacheKey string, body []by
 }
 
 // 流式请求：转发并逐块缓存 SSE 事件
-func (h *DeepSeekProxyHandler) fetchAndCacheStream(cacheKey string, body []byte) (*cache.CacheValue, error) {
+func (h *DeepSeekProxyHandler) fetchAndCacheStream(cacheKey string, body []byte, r *http.Request) (*cache.CacheValue, error) {
+	logger := logx.WithContext(r.Context())
+
+	logger.Infof("DeepSeek streaming: %s", cacheKey)
 	req, err := http.NewRequest("POST", "https://api.deepseek.com/v1/chat/completions", bytes.NewReader(body))
 	if err != nil {
+		logger.Errorf("创建 DeepSeek 请求失败: %v", err)
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+h.apiKey)
@@ -291,7 +273,7 @@ func (h *DeepSeekProxyHandler) fetchAndCacheStream(cacheKey string, body []byte)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("deepseek returned status %d", resp.StatusCode)
+		return nil, fmt.Errorf(" v %d", resp.StatusCode)
 	}
 
 	var events []cache.StreamEvent
@@ -307,6 +289,9 @@ func (h *DeepSeekProxyHandler) fetchAndCacheStream(cacheKey string, body []byte)
 		if line == "" {
 			continue
 		}
+		//logger.Infof("获取DeepSeek响应失败: %v", err)
+		logger.Debugf("DeepSeek streaming: %s", line)
+
 		if strings.HasPrefix(line, "data: ") {
 			data := strings.TrimPrefix(line, "data: ")
 			now := time.Now()
@@ -337,14 +322,14 @@ func (h *DeepSeekProxyHandler) fetchAndCacheStream(cacheKey string, body []byte)
 
 // 从缓存重放流式响应
 func (h *DeepSeekProxyHandler) serveCachedStream(w http.ResponseWriter, r *http.Request, cv *cache.CacheValue) {
-	//func (h *DeepSeekProxyHandler) serveCachedStream(w http.ResponseWriter, cv *cache.CacheValue) {
+	logger := logx.WithContext(r.Context())
+
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("X-Accel-Buffering", "no") // 🔑 禁用 Nginx 缓冲
-	//w.Header().Set("Transfer-Encoding", "chunked") // 🔑 使用分块传输
 
-	flusher, ok := w.(http.Flusher)
+	flusher, ok := w.(*middleware.ResponseCapture).Flusher()
 	if !ok {
 		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
 		return
@@ -364,7 +349,7 @@ func (h *DeepSeekProxyHandler) serveCachedStream(w http.ResponseWriter, r *http.
 		}
 
 		if i > 0 && i < len(cv.Delays) {
-			logx.Infof("等待 %.2f ms 后发送第 %d 个事件",
+			logger.Debugf("等待 %.2f ms 后发送第 %d 个事件",
 				float64(cv.Delays[i])/1e6, i+1)
 			timer := time.NewTimer(cv.Delays[i]) // 按照原延迟等待
 			select {
@@ -378,7 +363,7 @@ func (h *DeepSeekProxyHandler) serveCachedStream(w http.ResponseWriter, r *http.
 		flusher.Flush() // 🔑 每次发送后立即刷新
 
 		actualDelay := time.Since(sendTime)
-		logx.Infof("✅ 已发送第 %d 个事件，实际延迟: %.2f ms",
+		logger.Debugf("✅ 已发送第 %d 个事件，实际延迟: %.2f ms",
 			i+1, float64(actualDelay)/1e6)
 
 	}

@@ -31,6 +31,9 @@ const (
 
 func (m *AuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		logger := logx.WithContext(r.Context())
+
 		// 从请求头获取 Token
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
@@ -50,7 +53,7 @@ func (m *AuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 		// 解析 Token
 		claims, err := utils.ParseToken(tokenString, m.config.AccessSecret)
 		if err != nil {
-			logx.Errorf("Failed to parse token: %v", err)
+			logger.Errorf("Failed to parse token: %v", err)
 			utils.Unauthorized(w, "Invalid or expired token")
 			return
 		}
@@ -90,6 +93,6 @@ func GetUserID(ctx context.Context) (int64, bool) {
 // GetWalletAddress 从 context 中获取钱包地址
 func GetWalletAddress(ctx context.Context) (string, bool) {
 	addr, ok := ctx.Value(WalletAddressKey).(string)
-	logx.Errorf("GetWalletAddress: %v", addr)
+	logx.WithContext(ctx).Infof("GetWalletAddress: %v", addr)
 	return addr, ok
 }

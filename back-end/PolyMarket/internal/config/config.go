@@ -60,18 +60,29 @@ type DeepseekConfig struct {
 }
 
 type X402Config struct {
-	Enable    bool    `json:"Enable" yaml:"Enable"`
-	Amount    float64 `json:"Amount" yaml:"Amount"`       // 默认服务费用
-	Recipient string  `json:"Recipient" yaml:"Recipient"` // 收款地址
-	RpcUrl    string  `json:"RpcUrl" yaml:"RpcUrl"`       // Solana RPC 端点
+	Enable         bool                   `json:"Enable" yaml:"Enable"`
+	FacilitatorUrl string                 `json:"FacilitatorUrl" yaml:"FacilitatorUrl"`
+	DefaultNetwork string                 `json:"DefaultNetwork" yaml:"DefaultNetwork"`
+	DefaultScheme  string                 `json:"DefaultScheme" yaml:"DefaultScheme"`
+	Routes         map[string]RouteConfig `json:"Routes" yaml:"Routes"`
 }
 
-// DefaultX402Config 返回默认配置
-func DefaultX402Config() X402Config {
-	return X402Config{
-		Enable:    true,
-		Amount:    0.001, // 默认 0.001 SOL
-		Recipient: "",    // 需要配置
-		RpcUrl:    "https://api.mainnet-beta.solana.com",
-	}
+type RouteConfig struct {
+	Accepts     []AcceptConfig `json:"Accepts" yaml:"Accepts"`
+	Description string         `json:"Description" yaml:"Description"`
+	MimeType    string         `json:"MimeType" yaml:"MimeType"`
+}
+
+type AcceptConfig struct {
+	Scheme  string `json:"Scheme" yaml:"Scheme"`
+	Asset   string `json:"Asset" yaml:"Asset"`
+	Price   string `json:"Price" yaml:"Price"`
+	Network string `json:"Network" yaml:"Network"`
+	PayTo   string `json:"PayTo" yaml:"PayTo"`
+	Extra   Extra
+}
+
+type Extra struct {
+	Name    string `json:"Name" yaml:"Name"`
+	Version string `json:"Version" yaml:"Version"`
 }
