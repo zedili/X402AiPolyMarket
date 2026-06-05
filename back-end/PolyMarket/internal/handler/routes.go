@@ -143,50 +143,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/admin/market/:id/settle",
 				Handler: market.AdminSettleMarketHandler(serverCtx),
 			},
-			// 交易模块 - 订单管理
-			{
-				Method:  http.MethodPost,
-				Path:    "/trade/order",
-				Handler: trade.CreateOrderHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/trade/orders",
-				Handler: trade.OrderListHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/trade/order/:id",
-				Handler: trade.OrderDetailHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/trade/order/:id/cancel",
-				Handler: trade.CancelOrderHandler(serverCtx),
-			},
-			// 交易模块 - 交易历史
-			{
-				Method:  http.MethodGet,
-				Path:    "/trade/history",
-				Handler: trade.TradeHistoryHandler(serverCtx),
-			},
-			// 交易模块 - 持仓管理
-			{
-				Method:  http.MethodGet,
-				Path:    "/trade/positions",
-				Handler: trade.PositionListHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/trade/position/:id",
-				Handler: trade.PositionDetailHandler(serverCtx),
-			},
-			// 交易模块 - 统计
-			{
-				Method:  http.MethodGet,
-				Path:    "/trade/stats",
-				Handler: trade.TradingStatsHandler(serverCtx),
-			},
 		},
 		rest.WithPrefix("/api/v1"),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
@@ -221,4 +177,53 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		rest.WithPrefix("/api/v1"),
 		//rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 	)
+
+	//	======== Polymarket 交易接口配置
+	server.AddRoutes([]rest.Route{
+		// 交易模块 - 订单管理
+		{
+			Method:  http.MethodPost,
+			Path:    "/trade/order",
+			Handler: authMiddleware.Handle(trade.CreateOrderHandler(serverCtx)),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/trade/orders",
+			Handler: authMiddleware.Handle(trade.OrderListHandler(serverCtx)),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/trade/order/:id",
+			Handler: authMiddleware.Handle(trade.OrderDetailHandler(serverCtx)),
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/trade/order/:id/cancel",
+			Handler: authMiddleware.Handle(trade.CancelOrderHandler(serverCtx)),
+		},
+		// 交易模块 - 交易历史
+		{
+			Method:  http.MethodGet,
+			Path:    "/trade/history",
+			Handler: authMiddleware.Handle(trade.TradeHistoryHandler(serverCtx)),
+		},
+		// 交易模块 - 持仓管理
+		{
+			Method:  http.MethodGet,
+			Path:    "/trade/positions",
+			Handler: authMiddleware.Handle(trade.PositionListHandler(serverCtx)),
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/trade/position/:id",
+			Handler: authMiddleware.Handle(trade.PositionDetailHandler(serverCtx)),
+		},
+		// 交易模块 - 统计
+		{
+			Method:  http.MethodGet,
+			Path:    "/trade/stats",
+			Handler: authMiddleware.Handle(trade.TradingStatsHandler(serverCtx)),
+		},
+	}, rest.WithTimeout(0),
+		rest.WithPrefix("/api/v1"))
 }
