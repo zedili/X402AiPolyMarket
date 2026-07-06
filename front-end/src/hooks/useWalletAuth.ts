@@ -6,6 +6,7 @@ import { useAuth } from './useAuth';
 import { authApi } from '@/lib/api';
 import { x402PolygonClient } from '@/lib/x402-client-polygon';
 import { X } from 'lucide-react';
+import { l2AuthClient } from '@/lib/polymarket-l2-auth-client';
 
 
 /**
@@ -38,6 +39,7 @@ export function useWalletAuth() {
         logout();
       }
       x402PolygonClient.setWalletAuthInfo(null); // 清除 x402 钱包信息
+      // l2AuthClient.clearCredentials(); // 清除 L2 凭证
       lastAddressRef.current = undefined;
       // logout();
       return;
@@ -98,6 +100,7 @@ export function useWalletAuth() {
               connected: true,
               walletClient,
             });
+            l2AuthClient.initialize(walletClient as any);
           }
           
         } catch (error: any) {
@@ -134,8 +137,10 @@ export function useWalletAuth() {
           connected: true,
           walletClient,
         });
+        l2AuthClient.initialize(walletClient as any)
       }else {
         x402PolygonClient.setWalletAuthInfo(null); // 如果没有 walletClient，清除 x402 钱包信息
+        // l2AuthClient.clearCredentials(); // 清除 L2 凭证
         logout();
       }
     }

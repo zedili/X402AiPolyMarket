@@ -223,13 +223,6 @@ setWalletAuthInfo(adapter: PolygonWalletAdapter | null = null) {
           return response;
         }
 
-        // const paymentResponse = httpClient.getPaymentSettleResponse((name) =>
-        //   response.headers.get(name)
-        // );
-        
-        // if (paymentResponse) {
-        //   console.log("Payment settled successfully:", paymentResponse);
-        // }
       }
 
       // 检查业务层面的错误（如 session expired）

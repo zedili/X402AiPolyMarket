@@ -20,7 +20,7 @@ cd back-end/PolyMarket
 go mod download
 
 # 配置数据库
-# 编辑 etc/polymarket.yaml，设置MySQL和Redis连接信息
+# 编辑 etc/plmk.yaml，设置MySQL和Redis连接信息
 ```
 
 ### 2. 初始化数据库
@@ -30,9 +30,9 @@ go mod download
 mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS polymarket CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 # 执行初始化脚本
-mysql -u root -p polymarket < scripts/init_db.sql
-mysql -u root -p polymarket < scripts/module2_init_db.sql
-mysql -u root -p polymarket < scripts/module3_init_db.sql
+mysql -u root -p plmk < scripts/init_db.sql
+mysql -u root -p plmk < scripts/module2_init_db.sql
+mysql -u root -p plmk < scripts/module3_init_db.sql
 ```
 
 ### 3. 启动服务
@@ -42,8 +42,8 @@ mysql -u root -p polymarket < scripts/module3_init_db.sql
 go run main.go
 
 # 编译运行
-go build -o polymarket.exe .
-./polymarket.exe
+go build -o plmk.exe .
+./plmk.exe
 ```
 
 ### 4. 运行测试

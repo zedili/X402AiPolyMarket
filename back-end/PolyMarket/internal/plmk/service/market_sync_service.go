@@ -2,7 +2,7 @@ package service
 
 import (
 	"X402AiPolyMarket/PolyMarket/internal/model"
-	"X402AiPolyMarket/PolyMarket/internal/polymarket"
+	"X402AiPolyMarket/PolyMarket/internal/plmk"
 	"context"
 	"fmt"
 	"strings"
@@ -14,13 +14,13 @@ import (
 
 // MarketSyncService 市场数据同步服务
 type MarketSyncService struct {
-	gammaClient *polymarket.GammaClient
+	gammaClient *plmk.GammaClient
 }
 
 // NewMarketSyncService 创建市场数据同步服务
 func NewMarketSyncService() *MarketSyncService {
 	return &MarketSyncService{
-		gammaClient: polymarket.NewGammaClient(),
+		gammaClient: plmk.NewGammaClient(),
 	}
 }
 
@@ -129,7 +129,7 @@ func (s *MarketSyncService) saveMarketToDb(ctx context.Context, startTime time.T
 }
 
 // mapToExistingMarket 将 Polymarket API 数据映射到现有的 Market 模型
-func (s *MarketSyncService) mapToExistingMarket(pmMarket polymarket.Market) (*model.Market, error) {
+func (s *MarketSyncService) mapToExistingMarket(pmMarket plmk.Market) (*model.Market, error) {
 	now := time.Now()
 
 	// 确定分类（根据问题内容简单分类）
@@ -312,7 +312,7 @@ func (s *MarketSyncService) categorizeMarket(question string) string {
 }
 
 // extractTags 从 Polymarket 数据中提取标签
-func (s *MarketSyncService) extractTags(pmMarket polymarket.Market) model.JSONArray {
+func (s *MarketSyncService) extractTags(pmMarket plmk.Market) model.JSONArray {
 	var tags []string
 
 	// 根据特征添加标签
@@ -349,7 +349,7 @@ func (s *MarketSyncService) extractTags(pmMarket polymarket.Market) model.JSONAr
 }
 
 // determineStatus 确定市场状态
-func (s *MarketSyncService) determineStatus(pmMarket polymarket.Market) uint8 {
+func (s *MarketSyncService) determineStatus(pmMarket plmk.Market) uint8 {
 	now := time.Now()
 
 	// 已结束的市场

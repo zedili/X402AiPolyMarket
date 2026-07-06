@@ -109,3 +109,10 @@ X402Config:
               Version: "2"
       Description: "Premium Market Data"
       MimeType: "application/json"
+
+PloymarketConfig:
+  ClobHost: "https://clob.polymarket.com"
+#  ClobHost: "https://sandbox.polymarket.com"
+  ClobApiKey: "your-colb-api-key"
+#  ChainId: 137
+  ChainId: 80002

@@ -1,7 +1,7 @@
 package scheduler
 
 import (
-	"X402AiPolyMarket/PolyMarket/internal/polymarket/service"
+	"X402AiPolyMarket/PolyMarket/internal/plmk/service"
 	"context"
 	"runtime/debug"
 	"sync"

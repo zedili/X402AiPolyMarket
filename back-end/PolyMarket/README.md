@@ -38,7 +38,7 @@ MySQL:
   Port: 3306
   User: root
   Password: your_password  # 修改为你的密码
-  Database: polymarket
+  Database: plmk
 
 Redis:
   Host: 127.0.0.1:6379
@@ -49,11 +49,11 @@ Redis:
 
 ```bash
 # 开发环境
-go run polymarket.go -f etc/polymarket-api.yaml
+go run plmk.go -f etc/plmk-api.yaml
 
 # 或者编译后运行
-go build -o polymarket
-./polymarket -f etc/polymarket-api.yaml
+go build -o plmk
+./plmk -f etc/plmk-api.yaml
 ```
 
 ### 6. 测试接口

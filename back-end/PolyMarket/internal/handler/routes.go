@@ -179,6 +179,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	)
 
 	//	======== Polymarket 交易接口配置
+
 	server.AddRoutes([]rest.Route{
 		// 交易模块 - 订单管理
 		{
@@ -226,4 +227,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		},
 	}, rest.WithTimeout(0),
 		rest.WithPrefix("/api/v1"))
+
+	// polyMarket 接口配置
+	RegisterPlmkHandlers(server, serverCtx, authMiddleware)
 }

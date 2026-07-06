@@ -1,12 +1,11 @@
+import { API_CONFIG } from '../config';
 import { AuthManager } from '../auth';
 // import { x402Client } from '../../x402-client-solana';
 import { x402PolygonClient } from '../../x402-client-polygon';
 import { X } from 'lucide-react';
 
 // DeepSeek API 服务
-// const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-const DEEPSEEK_API_URL = 'http://localhost:3000/api/v1/v1/chat/completions';
-const DEEPSEEK_API_KEY = 'sk-3accdd7507b943b59179c45eb265e73f';
+const DEEPSEEK_API_URL = API_CONFIG.BASE_URL + '/v1/chat/completions'
 
 interface DeepSeekMessage {
   role: 'system' | 'user' | 'assistant';

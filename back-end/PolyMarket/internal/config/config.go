@@ -8,13 +8,14 @@ import "github.com/zeromicro/go-zero/rest"
 type Config struct {
 	rest.RestConf
 
-	MySQL          MySQLConfig
-	Redis          RedisConfig
-	Blockchain     BlockchainConfig
-	Auth           AuthConfig
-	Business       BusinessConfig
-	DeepseekConfig DeepseekConfig
-	X402Config     X402Config
+	MySQL            MySQLConfig
+	Redis            RedisConfig
+	Blockchain       BlockchainConfig
+	Auth             AuthConfig
+	Business         BusinessConfig
+	DeepseekConfig   DeepseekConfig
+	X402Config       X402Config
+	PloymarketConfig PloymarketConfig
 }
 
 type MySQLConfig struct {
@@ -85,4 +86,10 @@ type AcceptConfig struct {
 type Extra struct {
 	Name    string `json:"Name" yaml:"Name"`
 	Version string `json:"Version" yaml:"Version"`
+}
+
+type PloymarketConfig struct {
+	ClobHost   string `json:"ClobHost" yaml:"ClobHost"`
+	ClobApiKey string `json:"ClobApiKey" yaml:"ClobApiKey"`
+	ChainId    int    `json:"ChainId" yaml:"ChainId"`
 }

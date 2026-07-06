@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	// 与 etc/polymarket-api.yaml 中的 MySQL 配置保持一致：root 用户无密码
+	// 与 etc/plmk-api.yaml 中的 MySQL 配置保持一致：root 用户无密码
 	rootDSN := "root:@tcp(127.0.0.1:3306)/?charset=utf8mb4&parseTime=True&loc=Local&multiStatements=true"
 	rootDB, err := sql.Open("mysql", rootDSN)
 	checkErr(err, "连接 MySQL 失败")
@@ -19,24 +19,24 @@ func main() {
 
 	// Step 1: 检查数据库是否存在
 	var dbExists bool
-	err = rootDB.QueryRow(`SELECT COUNT(*) > 0 FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = 'polymarket'`).Scan(&dbExists)
+	err = rootDB.QueryRow(`SELECT COUNT(*) > 0 FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = 'plmk'`).Scan(&dbExists)
 	checkErr(err, "检查数据库是否存在失败")
 
 	if !dbExists {
-		fmt.Println("📦 创建数据库 polymarket...")
-		_, err = rootDB.Exec(`CREATE DATABASE polymarket DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`)
+		fmt.Println("📦 创建数据库 plmk...")
+		_, err = rootDB.Exec(`CREATE DATABASE plmk DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`)
 		checkErr(err, "创建数据库失败")
-		fmt.Println("✅ 数据库 polymarket 创建成功")
+		fmt.Println("✅ 数据库 plmk 创建成功")
 	} else {
-		fmt.Println("✅ 数据库 polymarket 已存在")
+		fmt.Println("✅ 数据库 plmk 已存在")
 	}
 
-	// Step 2: 连接 polymarket 数据库
-	dbDSN := "root:@tcp(127.0.0.1:3306)/polymarket?charset=utf8mb4&parseTime=True&loc=Local&multiStatements=true"
+	// Step 2: 连接 plmk 数据库
+	dbDSN := "root:@tcp(127.0.0.1:3306)/plmk?charset=utf8mb4&parseTime=True&loc=Local&multiStatements=true"
 	db, err := sql.Open("mysql", dbDSN)
-	checkErr(err, "连接 polymarket 数据库失败")
+	checkErr(err, "连接 plmk 数据库失败")
 	defer db.Close()
-	checkErr(db.Ping(), "无法连接到数据库 polymarket")
+	checkErr(db.Ping(), "无法连接到数据库 plmk")
 
 	// Step 3: 初始化 init_db.sql（如 system_configs）
 	if !tableExists(db, "system_configs") {
@@ -120,7 +120,7 @@ func tableExists(db *sql.DB, tableName string) bool {
 	query := `
 		SELECT COUNT(*) > 0
 		FROM information_schema.tables
-		WHERE table_schema = 'polymarket' AND table_name = ?
+		WHERE table_schema = 'plmk' AND table_name = ?
 	`
 	err := db.QueryRow(query, tableName).Scan(&exists)
 	if err != nil {

@@ -13,9 +13,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { l2AuthClient } from '@/lib/polymarket-l2-auth-client';
+
 interface CreateOrderFormProps {
   marketId: number;
 }
+
 
 export function CreateOrderForm({ marketId }: CreateOrderFormProps) {
   const { isAuthenticated } = useAuth();
@@ -25,7 +28,21 @@ export function CreateOrderForm({ marketId }: CreateOrderFormProps) {
   const [price, setPrice] = useState('');
   const [slippage, setSlippage] = useState('1');
 
-  const { loading, error, execute } = useApi(tradeApi.createOrder, {
+
+
+  const { loading, error, execute } = useApi(
+    // tradeApi.createOrder, 
+    async (data) => { 
+      return await l2AuthClient.placeOrder({
+        market_id: marketId,
+        order_type: parseInt(orderType),
+        position: parseInt(position),
+        amount: parseFloat(amount),
+        price: parseFloat(price),
+        slippage: parseFloat(slippage) || 1,
+      });
+    },
+    {
     onSuccess: (order) => {
       toast.success('订单创建成功！', {
         description: `订单ID: ${order.order_id}`,
@@ -53,6 +70,7 @@ export function CreateOrderForm({ marketId }: CreateOrderFormProps) {
       toast.error('请填写完整信息');
       return;
     }
+
 
     try {
       await execute({

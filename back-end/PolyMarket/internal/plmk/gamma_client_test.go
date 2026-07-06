@@ -1,4 +1,4 @@
-package polymarket
+package plmk
 
 import (
 	"testing"
@@ -6,7 +6,8 @@ import (
 
 func TestGetMarkets(t *testing.T) {
 	client := NewGammaClient()
-	markets, err := client.GetMarkets(nil)
+	i := 0
+	markets, err := client.GetMarkets(nil, &i)
 	if err != nil {
 		t.Errorf("GetMarkets() error = %v", err)
 		return
