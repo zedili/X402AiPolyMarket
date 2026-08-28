@@ -71,8 +71,10 @@ x402 is most useful when it is treated as an application boundary, not a checkou
 
 - Repository: https://github.com/zedili/X402AiPolyMarket
 - Project page: https://arbitrum-singapore.hackquest.io/projects/Signal402
-- Demo URL: **replace with the permanent claimed deployment URL before final submission**
-- Demo video: **add after recording**
+- Current preview: https://temporary-rushing-boron-2hytsda.vercel.app
+- Demo URL: **replace the preview with the permanent claimed deployment URL before final submission**
+- Demo video: https://raw.githubusercontent.com/zedili/X402AiPolyMarket/main/docs/media/Signal402-Demo-Video.mp4
+- Pitch video: https://raw.githubusercontent.com/zedili/X402AiPolyMarket/main/docs/media/Signal402-Pitch-Video.mp4
 
 ## Team
 
