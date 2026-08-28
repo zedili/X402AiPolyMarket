@@ -147,6 +147,7 @@ describe('Signal402 x402 protocol flow', () => {
   let httpServer: x402HTTPResourceServer;
   let resourceFetch: typeof globalThis.fetch;
   let requestCount: number;
+  let handlerStatus: number;
 
   beforeEach(async () => {
     facilitator = new MemoryFacilitator();
@@ -169,6 +170,7 @@ describe('Signal402 x402 protocol flow', () => {
     });
     await httpServer.initialize();
     requestCount = 0;
+    handlerStatus = 200;
 
     resourceFetch = async (input, init) => {
       requestCount += 1;
@@ -181,6 +183,25 @@ describe('Signal402 x402 protocol flow', () => {
       }
       if (result.type !== 'payment-verified') {
         throw new Error('Expected the test route to require payment');
+      }
+
+      if (handlerStatus >= 400) {
+        const canceled = await result.cancellationDispatcher.cancel({
+          reason: 'handler_failed',
+          responseStatus: handlerStatus,
+        });
+        const failureHeaders = httpServer.createFailurePathSettlementHeaders(
+          canceled,
+          result.beforeHandlerSettlement,
+          result.paymentPayload,
+        );
+        return new Response(JSON.stringify({ error: 'Analysis failed' }), {
+          status: handlerStatus,
+          headers: {
+            'content-type': 'application/json',
+            ...failureHeaders,
+          },
+        });
       }
 
       const responseBody = Buffer.from(JSON.stringify({ report: 'generated' }));
@@ -266,5 +287,27 @@ describe('Signal402 x402 protocol flow', () => {
       amount: '10000',
       payer: buyer.address,
     });
+  });
+
+  it('does not settle the authorization when report generation fails', async () => {
+    handlerStatus = 502;
+    const buyer = privateKeyToAccount(`0x${'22'.repeat(32)}`);
+    const client = new x402Client().register(
+      X402_NETWORK,
+      new ExactEvmClientScheme(buyer),
+    );
+    const paidFetch = wrapFetchWithPayment(resourceFetch, client);
+
+    const response = await paidFetch('https://signal402.test/api/analysis', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ marketId: 1 }),
+    });
+
+    expect(response.status).toBe(502);
+    expect(requestCount).toBe(2);
+    expect(facilitator.verifyCalls).toHaveLength(1);
+    expect(facilitator.settleCalls).toHaveLength(0);
+    expect(response.headers.get('payment-response')).toBeNull();
   });
 });
