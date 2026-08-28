@@ -9,8 +9,19 @@ import { WalletProvider } from "@/providers/wallet-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://signal402.vercel.app"),
   title: "Signal402 — Pay-per-request market intelligence",
   description: "Live prediction-market snapshots and x402-gated AI reports on Arbitrum.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Signal402 — Pay-per-request market intelligence",
+    description: "Live prediction-market snapshots and x402-gated AI reports on Arbitrum.",
+    url: "/",
+    siteName: "Signal402",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -21,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-      <link rel="icon" href="/favicon.svg" />
+        <link rel="icon" href="/favicon.svg" />
       </head>
       <body>
         <ErrorBoundary>
