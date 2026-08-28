@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,6 +30,14 @@ const statusLabels: Record<number, string> = {
 
 export function MarketDetailContent({ market }: MarketDetailContentProps) {
   const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    const requestedTab = window.location.hash.slice(1);
+    if (['overview', 'ai', 'info'].includes(requestedTab)) {
+      setActiveTab(requestedTab);
+    }
+  }, []);
+
   const outcomeLabels =
     (market.metadata?.outcome_labels as string[] | undefined) ?? ['Yes', 'No'];
   const sourceUrl = market.metadata?.source_url as string | undefined;
