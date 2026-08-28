@@ -42,6 +42,15 @@ Signal402 turns one report into one transaction:
 
 The innovation is not simply “AI plus markets.” Signal402 defines a clean commercial and technical boundary around a single information response. Price and payment terms are machine-readable; the app is non-custodial; AI credentials remain server-side; and provider failure cancels settlement rather than charging for an unusable result.
 
+## Judging-criteria fit
+
+- **Smart contract quality:** a minimal hash-only attestation registry with active Hardhat tests, plus a production x402 flow that uses official SDK packages and fails closed before settlement.
+- **Product-Market Fit:** a transparent 0.01 test-USDC unit price for occasional users and autonomous agents that need one bounded result rather than a subscription.
+- **Innovation and Creativity:** an atomic, machine-readable commercial boundary around a structured AI response—not merely an AI chat interface attached to market data.
+- **Real Problem Solving:** direct access to contextual market analysis without custody, trade execution, an account, or a recurring plan.
+
+Signal402 is an MVP with verified technical execution; it does not yet claim users, revenue, retention, or prediction-accuracy validation.
+
 ## Accomplishments
 
 - Replaced mock market fixtures with live Polymarket data.
@@ -69,6 +78,7 @@ x402 is most useful when it is treated as an application boundary, not a checkou
 
 - Production AI readiness endpoint: https://signal402.vercel.app/api/analysis/status
 - Successful Arbitrum Sepolia settlement: https://sepolia.arbiscan.io/tx/0x7a2eea1ee62ef8f02e2731498f6bb77072db477f33a258af5d8c53106aada4e5
+- Post-key-rotation settlement: https://sepolia.arbiscan.io/tx/0x4c0e782d706b544bb154116457eb8c3d447fe86a1b6e82ca4f94043221cdadf2
 - Payment amount: 0.01 test USDC (`10000` base units).
 - The successful response rendered the structured DeepSeek report and settlement receipt in the production UI.
 

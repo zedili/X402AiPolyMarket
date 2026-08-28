@@ -112,6 +112,7 @@ contracts/contracts/       Legacy contract experiments
 - [Pitch deck](Signal402-Arbitrum-Open-House-Pitch.pptx)
 - [Three-minute demo script](docs/demo-script.md)
 - [Submission copy](docs/submission-copy.md)
+- [Judging-readiness matrix](docs/judging-readiness.md)
 - [Verified settlement receipt](https://sepolia.arbiscan.io/tx/0x7a2eea1ee62ef8f02e2731498f6bb77072db477f33a258af5d8c53106aada4e5)
 - [Post-key-rotation settlement receipt](https://sepolia.arbiscan.io/tx/0x4c0e782d706b544bb154116457eb8c3d447fe86a1b6e82ca4f94043221cdadf2)
 
