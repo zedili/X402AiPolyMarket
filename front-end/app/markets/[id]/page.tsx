@@ -1,66 +1,18 @@
-'use client';
+import { notFound } from "next/navigation";
+import { MarketDetailPageClient } from "@/components/MarketDetailPageClient";
 
-import { useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useApi } from '@/hooks/useApi';
-import { marketApi } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft } from 'lucide-react';
-import { MarketDetailContent } from '@/components/MarketDetailContent';
-
-export default function MarketDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
-  const marketId = id ? parseInt(id, 10) : 0;
-
-  const { data: market, loading, error, execute } = useApi(marketApi.getMarketDetail);
-
-  useEffect(() => {
-    if (marketId) {
-      execute(marketId);
-    }
-  }, [execute, marketId]);
-
-  if (loading) {
-    return (
-      <div className="container py-8 space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
-  }
-
-  if (error || !market) {
-    return (
-      <div className="container py-16 space-y-6">
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-destructive">Market unavailable</CardTitle>
-            <CardDescription>{error?.message || 'This market could not be found.'}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => router.push('/#markets')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to markets
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container py-8 space-y-6">
-      <Button variant="ghost" onClick={() => router.push('/#markets')}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
-      </Button>
-
-      <MarketDetailContent market={market} />
-    </div>
-  );
+interface MarketDetailPageProps {
+  params: Promise<{ id: string }>;
 }
 
+export default async function MarketDetailPage({
+  params,
+}: MarketDetailPageProps) {
+  const { id } = await params;
+
+  if (!/^\d+$/.test(id)) {
+    notFound();
+  }
+
+  return <MarketDetailPageClient marketId={Number(id)} />;
+}
