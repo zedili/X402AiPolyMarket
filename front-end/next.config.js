@@ -22,6 +22,7 @@ const nextConfig = {
   },
   // 开发环境代理：将 /api/v1/* 转发到后端 8888 端口
   async rewrites() {
+    if (process.env.NODE_ENV !== 'development') return [];
     return [
       {
         source: '/api/v1/:path*',
