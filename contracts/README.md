@@ -22,8 +22,18 @@ same deployment script used for Arbitrum Sepolia.
 
 ## Deploy to Arbitrum Sepolia
 
-Provide credentials only through your local shell or a secret manager. Never
-commit a private key or paste it into project documentation.
+For an owner-wallet deployment, use the
+[official Arbitrum Remix workflow](https://docs.arbitrum.io/build-decentralized-apps/quickstart-solidity-remix):
+compile `src/Signal402Registry.sol` with Solidity 0.8.28, select the browser
+wallet provider, verify chain ID `421614`, and review the deployment transaction
+in the wallet. Do not import, export, or paste the owner's private key.
+
+The complete project-specific safety and verification sequence is in the
+[deployment runbook](../docs/registry-deployment-runbook.md).
+
+For automated operator deployments, provide credentials only through your
+local shell or a secret manager. Never commit a private key or paste it into
+project documentation.
 
 ```bash
 export ARBITRUM_SEPOLIA_RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
