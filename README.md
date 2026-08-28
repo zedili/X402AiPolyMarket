@@ -10,6 +10,8 @@ The target flow is simple:
 
 Signal402 does not custody user funds or place trades.
 
+Live production app: https://signal402.vercel.app
+
 ## What works now
 
 - Live market snapshots from Polymarket's public Gamma API, normalized by server-side Next.js routes.
@@ -20,6 +22,7 @@ Signal402 does not custody user funds or place trades.
 - Arbiscan transaction receipts shown after successful settlement.
 - A minimal Solidity registry for optional hash-only insight attestations, with Hardhat tests.
 - A Go API retained from the original prototype; its unfinished legacy verifier fails closed.
+- A permanent Vercel production deployment whose live-data pages and x402 `402 Payment Required` response have been verified.
 
 The old Solana mock-payment page and permissive mock verifier were removed. They are not part of Signal402's active architecture.
 

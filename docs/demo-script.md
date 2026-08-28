@@ -42,7 +42,7 @@ Show the report structure or the locked preview:
 
 “The current build has live Polymarket data, an x402 v2 gate on `eip155:421614`, a 0.01 USDC price, protocol and contract tests, and green CI across contracts, backend, and frontend.”
 
-“Next is a permanent deployment, a recorded live testnet payment, multi-provider evaluation, and an agent-native API. Signal402 makes market intelligence composable: pay per insight, not per subscription.”
+“The permanent deployment is live. Next is a recorded live testnet payment, multi-provider evaluation, and an agent-native API. Signal402 makes market intelligence composable: pay per insight, not per subscription.”
 
 ## 60-second fallback
 
@@ -54,4 +54,3 @@ Show the report structure or the locked preview:
 - Never reveal seed phrases, private keys, API keys, or wallet recovery screens.
 - Pre-open the exact market page and keep the deck as a fallback if network access fails.
 - Do not claim guaranteed returns, prediction accuracy, revenue, users, or mainnet readiness.
-

@@ -49,7 +49,7 @@ The innovation is not simply “AI plus markets.” Signal402 defines a clean co
 - Added Arbitrum Sepolia browser-wallet authorization and facilitator settlement.
 - Added strict server-side report validation and fail-closed settlement behavior.
 - Added protocol, smart-contract, backend, frontend, build, and dependency-audit checks.
-- Verified the online preview returns live market data and a valid x402 `402 Payment Required` response.
+- Deployed the permanent production app and verified that it returns live market data and a valid x402 `402 Payment Required` response.
 
 ## Challenges
 
@@ -61,8 +61,8 @@ x402 is most useful when it is treated as an application boundary, not a checkou
 
 ## Next steps
 
-- Claim and harden the permanent deployment.
 - Record an end-to-end Arbitrum Sepolia test-USDC payment.
+- Configure and verify the production AI-provider secret without exposing it to the client.
 - Add multi-provider analysis and an evaluation harness.
 - Expose an agent-native API with receipts and reusable report schemas.
 - Explore publisher/provider revenue sharing without adding custody.
@@ -71,8 +71,7 @@ x402 is most useful when it is treated as an application boundary, not a checkou
 
 - Repository: https://github.com/zedili/X402AiPolyMarket
 - Project page: https://arbitrum-singapore.hackquest.io/projects/Signal402
-- Current preview: https://temporary-rushing-boron-2hytsda.vercel.app
-- Demo URL: **replace the preview with the permanent claimed deployment URL before final submission**
+- Production app / demo URL: https://signal402.vercel.app
 - Demo video: https://raw.githubusercontent.com/zedili/X402AiPolyMarket/main/docs/media/Signal402-Demo-Video.mp4
 - Pitch video: https://raw.githubusercontent.com/zedili/X402AiPolyMarket/main/docs/media/Signal402-Pitch-Video.mp4
 
