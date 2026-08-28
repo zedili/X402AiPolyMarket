@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
+    "security:secrets": "node ../scripts/check-secrets.mjs",
     "lint": "next lint",
     "check": "tsc --noEmit",
     "format": "prettier --write ."
