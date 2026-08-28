@@ -28,7 +28,7 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 - [x] No AI key or wallet private key exists in the current tracked tree.
 - [x] CI scans tracked files for common credential patterns.
 - [x] Production AI key is server-only.
-- [ ] Revoke the historical DeepSeek key exposed in repository history and mark the GitHub secret-scanning alert as revoked.
+- [x] The historical DeepSeek key is absent from the provider inventory and the [GitHub secret-scanning alert](https://github.com/zedili/X402AiPolyMarket/security/secret-scanning/1) is closed as revoked.
 - [ ] Rotate the current production DeepSeek key before final submission, then update Vercel and re-run the paid readiness check.
 
 ## Final external action
