@@ -10,6 +10,7 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 - [x] `POST /api/analysis` returns x402 v2 payment requirements without payment.
 - [x] A 0.01 test-USDC payment settled on Arbitrum Sepolia.
 - [x] Settlement receipt: https://sepolia.arbiscan.io/tx/0x7a2eea1ee62ef8f02e2731498f6bb77072db477f33a258af5d8c53106aada4e5
+- [x] Post-rotation settlement receipt: https://sepolia.arbiscan.io/tx/0x4c0e782d706b544bb154116457eb8c3d447fe86a1b6e82ca4f94043221cdadf2
 - [x] AI/provider failure is covered by a test that proves settlement is not called.
 
 ## Judge materials
@@ -29,7 +30,7 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 - [x] CI scans tracked files for common credential patterns.
 - [x] Production AI key is server-only.
 - [x] The historical DeepSeek key is absent from the provider inventory and the [GitHub secret-scanning alert](https://github.com/zedili/X402AiPolyMarket/security/secret-scanning/1) is closed as revoked.
-- [ ] Rotate the current production DeepSeek key before final submission, then update Vercel and re-run the paid readiness check.
+- [x] Rotated the production DeepSeek key, updated Vercel, revoked the previous key, and re-ran the paid readiness check.
 
 ## Final external action
 
