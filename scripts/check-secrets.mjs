@@ -25,7 +25,9 @@ const apiKeyPrefix = ["s", "k", "-"].join("");
 const rules = [
   {
     name: "DeepSeek/OpenAI-style API key",
-    pattern: new RegExp(`${apiKeyPrefix}[A-Za-z0-9_-]{20,}`, "g"),
+    // Avoid matching the `sk-image-*` suffix in generated `mask-image-*`
+    // utility names while still detecting keys after quotes or whitespace.
+    pattern: new RegExp(`(?<![A-Za-z0-9])${apiKeyPrefix}[A-Za-z0-9_-]{20,}`, "g"),
   },
   {
     name: "GitHub access token",
