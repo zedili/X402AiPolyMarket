@@ -1,8 +1,8 @@
 # Signal402
 
-Signal402 is a non-custodial market-intelligence layer for people and autonomous agents. It is being rebuilt for the Arbitrum Open House Singapore Buildathon from the original X402AiPolyMarket prototype.
+Signal402 is a non-custodial market-intelligence layer for people and autonomous agents, built for the Arbitrum Open House Singapore Buildathon from the original X402AiPolyMarket prototype.
 
-The target flow is simple:
+The production flow is simple:
 
 1. Read live public prediction-market probabilities for free.
 2. Request a deeper AI report with evidence, counterarguments, risks, and an independent probability estimate.
@@ -113,6 +113,7 @@ contracts/contracts/       Legacy contract experiments
 - [Three-minute demo script](docs/demo-script.md)
 - [Submission copy](docs/submission-copy.md)
 - [Verified settlement receipt](https://sepolia.arbiscan.io/tx/0x7a2eea1ee62ef8f02e2731498f6bb77072db477f33a258af5d8c53106aada4e5)
+- [Post-key-rotation settlement receipt](https://sepolia.arbiscan.io/tx/0x4c0e782d706b544bb154116457eb8c3d447fe86a1b6e82ca4f94043221cdadf2)
 
 ## References
 
