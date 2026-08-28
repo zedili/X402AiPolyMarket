@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { x402Client } from '@x402/core/client';
 import { decodePaymentResponseHeader } from '@x402/core/http';
 import type { SettleResponse } from '@x402/core/types';
@@ -21,7 +21,13 @@ import {
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { WalletButton } from '@/components/WalletButton';
 import type { AIInsightReport } from '@/lib/api/types';
 import {
@@ -42,6 +48,9 @@ export function AIPredictionCard({ marketId }: AIPredictionCardProps) {
   const [settlement, setSettlement] = useState<SettleResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [serviceStatus, setServiceStatus] = useState<
+    'checking' | 'ready' | 'unavailable'
+  >('checking');
   const {
     address,
     chainId,
@@ -50,7 +59,31 @@ export function AIPredictionCard({ marketId }: AIPredictionCardProps) {
     signTypedData,
   } = useWallet();
 
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/analysis/status', {
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('AI readiness check failed');
+        return (await response.json()) as { ready?: boolean };
+      })
+      .then(({ ready }) => setServiceStatus(ready ? 'ready' : 'unavailable'))
+      .catch((statusError) => {
+        if (statusError instanceof Error && statusError.name === 'AbortError') {
+          return;
+        }
+        setServiceStatus('unavailable');
+      });
+    return () => controller.abort();
+  }, []);
+
   const requestReport = async () => {
+    if (serviceStatus !== 'ready') {
+      setError('AI service is unavailable. No payment was requested.');
+      return;
+    }
     if (!isConnected) {
       setError('Connect an EVM wallet before purchasing a report.');
       return;
@@ -82,8 +115,11 @@ export function AIPredictionCard({ marketId }: AIPredictionCardProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ marketId }),
       });
-      const body = (await response.json()) as AIInsightReport & { error?: string };
-      if (!response.ok) throw new Error(body.error ?? `Request failed (${response.status})`);
+      const body = (await response.json()) as AIInsightReport & {
+        error?: string;
+      };
+      if (!response.ok)
+        throw new Error(body.error ?? `Request failed (${response.status})`);
 
       const paymentResponse = response.headers.get('payment-response');
       if (paymentResponse) {
@@ -135,8 +171,8 @@ export function AIPredictionCard({ marketId }: AIPredictionCardProps) {
             <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
               <span>
-                You sign an EIP-3009 authorization. The facilitator pays gas, and
-                Signal402 settles only after the model returns successfully.
+                You sign an EIP-3009 authorization. The facilitator pays gas,
+                and Signal402 settles only after the model returns successfully.
               </span>
             </div>
           </div>
@@ -146,7 +182,15 @@ export function AIPredictionCard({ marketId }: AIPredictionCardProps) {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          {isConnected ? (
+          {serviceStatus === 'unavailable' && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                AI reports are temporarily unavailable. Payment is disabled.
+              </AlertDescription>
+            </Alert>
+          )}
+          {serviceStatus === 'ready' && isConnected ? (
             <Button onClick={requestReport} disabled={loading}>
               {loading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -159,8 +203,17 @@ export function AIPredictionCard({ marketId }: AIPredictionCardProps) {
                   ? `Buy report · ${X402_PRICE_USDC} USDC`
                   : `Switch network & buy · ${X402_PRICE_USDC} USDC`}
             </Button>
-          ) : (
+          ) : serviceStatus === 'ready' ? (
             <WalletButton />
+          ) : (
+            <Button disabled>
+              {serviceStatus === 'checking' && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {serviceStatus === 'checking'
+                ? 'Checking AI availability…'
+                : 'AI reports unavailable'}
+            </Button>
           )}
           <p className="break-all text-xs text-muted-foreground">
             Recipient: {X402_PAY_TO}
@@ -253,7 +306,11 @@ export function AIPredictionCard({ marketId }: AIPredictionCardProps) {
             </Alert>
           )}
 
-          <Button variant="outline" onClick={requestReport} disabled={loading}>
+          <Button
+            variant="outline"
+            onClick={requestReport}
+            disabled={loading || serviceStatus !== 'ready'}
+          >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {loading
               ? 'Confirm in wallet, then wait…'
