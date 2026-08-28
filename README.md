@@ -100,6 +100,14 @@ contracts/contracts/       Legacy contract experiments
 - The facilitator is an external dependency; production deployment should monitor it and document the trust boundary.
 - Only hashes, not private report contents, are intended for optional onchain attestation.
 
+## Buildathon materials
+
+- [Narrated product demo](docs/media/Signal402-Demo-Video.mp4)
+- [Narrated judge pitch](docs/media/Signal402-Pitch-Video.mp4)
+- [Pitch deck](Signal402-Arbitrum-Open-House-Pitch.pptx)
+- [Three-minute demo script](docs/demo-script.md)
+- [Submission copy](docs/submission-copy.md)
+
 ## References
 
 - [x402 documentation](https://docs.x402.org/)
