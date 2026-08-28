@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { extname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 const binaryExtensions = new Set([
@@ -60,7 +60,14 @@ const findings = [];
 for (const relativePath of trackedFiles) {
   if (binaryExtensions.has(extname(relativePath).toLowerCase())) continue;
 
-  const absolutePath = new URL(relativePath.replaceAll("\\", "/"), new URL("../", import.meta.url));
+  const absolutePath = new URL(
+    relativePath.replaceAll("\\", "/"),
+    new URL("../", import.meta.url),
+  );
+  // `git ls-files` still includes an index entry while a tracked file is
+  // deleted in the working tree. Skip it locally; after commit it disappears
+  // from the tracked-file list entirely.
+  if (!existsSync(absolutePath)) continue;
   if (statSync(absolutePath).size > 2_000_000) continue;
 
   const contents = readFileSync(absolutePath, "utf8");

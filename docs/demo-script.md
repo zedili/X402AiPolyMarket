@@ -18,7 +18,7 @@ Open a market detail page and select **AI Analysis**.
 
 “The user inspects the market for free. A structured report costs exactly 0.01 USDC on Arbitrum Sepolia. The wallet sees the amount and network before signing.”
 
-Point to the wallet/payment UI. Do not sign during the demo unless test USDC and wallet authorization have already been approved.
+Point to the wallet/payment UI. Use the already verified receipt as the default proof; only repeat a live payment if the test wallet and authorization have been approved.
 
 ## 1:25–2:10 — The x402 boundary
 
@@ -42,7 +42,7 @@ Show the report structure or the locked preview:
 
 “The current build has live Polymarket data, an x402 v2 gate on `eip155:421614`, a 0.01 USDC price, protocol and contract tests, and green CI across contracts, backend, and frontend.”
 
-“The permanent deployment is live. Next is a recorded live testnet payment, multi-provider evaluation, and an agent-native API. Signal402 makes market intelligence composable: pay per insight, not per subscription.”
+“The permanent deployment is live, and an end-to-end testnet payment has settled successfully. Next is multi-provider evaluation and an agent-native API. Signal402 makes market intelligence composable: pay per insight, not per subscription.”
 
 ## 60-second fallback
 

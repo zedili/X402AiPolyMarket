@@ -61,11 +61,16 @@ x402 is most useful when it is treated as an application boundary, not a checkou
 
 ## Next steps
 
-- Record an end-to-end Arbitrum Sepolia test-USDC payment.
-- Configure and verify the production AI-provider secret without exposing it to the client.
 - Add multi-provider analysis and an evaluation harness.
 - Expose an agent-native API with receipts and reusable report schemas.
 - Explore publisher/provider revenue sharing without adding custody.
+
+## Verified end-to-end proof
+
+- Production AI readiness endpoint: https://signal402.vercel.app/api/analysis/status
+- Successful Arbitrum Sepolia settlement: https://sepolia.arbiscan.io/tx/0x7a2eea1ee62ef8f02e2731498f6bb77072db477f33a258af5d8c53106aada4e5
+- Payment amount: 0.01 test USDC (`10000` base units).
+- The successful response rendered the structured DeepSeek report and settlement receipt in the production UI.
 
 ## Links
 

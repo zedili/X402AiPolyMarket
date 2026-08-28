@@ -23,20 +23,22 @@ Live production app: https://signal402.vercel.app
 - A minimal Solidity registry for optional hash-only insight attestations, with Hardhat tests.
 - A Go API retained from the original prototype; its unfinished legacy verifier fails closed.
 - A permanent Vercel production deployment whose live-data pages and x402 `402 Payment Required` response have been verified.
+- A successful end-to-end 0.01 test-USDC settlement with a structured production AI report and an Arbitrum Sepolia receipt.
 
 The old Solana mock-payment page and permissive mock verifier were removed. They are not part of Signal402's active architecture.
+Legacy trading, portfolio, profile, leaderboard, wallet-dashboard, and admin routes are also excluded from the production app so the deployed surface matches Signal402's information-only scope.
 
 ## Payment configuration
 
 The current Buildathon demo charges `0.01 USDC` per successful AI report on Arbitrum Sepolia:
 
-| Setting | Value |
-| --- | --- |
-| Protocol | x402 v2, `exact` scheme |
-| Network | `eip155:421614` |
-| Asset | Circle testnet USDC (`0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d`) |
-| Recipient | `0x0573f139d21fb3140155567Cba7630d3948F4ea3` |
-| Facilitator | `https://facilitator.payai.network` |
+| Setting     | Value                                                              |
+| ----------- | ------------------------------------------------------------------ |
+| Protocol    | x402 v2, `exact` scheme                                            |
+| Network     | `eip155:421614`                                                    |
+| Asset       | Circle testnet USDC (`0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d`) |
+| Recipient   | `0x0573f139d21fb3140155567Cba7630d3948F4ea3`                       |
+| Facilitator | `https://facilitator.payai.network`                                |
 
 The route first verifies the signed authorization, runs the AI handler, and settles only when the handler returns a successful response. A model or provider failure is not settled.
 
@@ -110,6 +112,7 @@ contracts/contracts/       Legacy contract experiments
 - [Pitch deck](Signal402-Arbitrum-Open-House-Pitch.pptx)
 - [Three-minute demo script](docs/demo-script.md)
 - [Submission copy](docs/submission-copy.md)
+- [Verified settlement receipt](https://sepolia.arbiscan.io/tx/0x7a2eea1ee62ef8f02e2731498f6bb77072db477f33a258af5d8c53106aada4e5)
 
 ## References
 
