@@ -1,55 +1,40 @@
-# X402AiPolyMarket contracts
+# Signal402 contracts
 
-此目录包含 X402AiPolyMarket 项目的智能合约。
+The active contract is `src/Signal402Registry.sol`. It provides an optional,
+permissionless way for a report requester to attest a market identifier and a
+report-content hash. It stores no report text, payment data, API key, or wallet
+secret. The x402 payment gate remains in the Next.js server.
 
-# 项目初始化
+Legacy token-economics experiments under `contracts/` are excluded by the
+Hardhat source configuration and are not part of the Buildathon product.
+
+## Verify locally
+
 ```bash
-
-# 1. 初始化 npm
-npm init -y
-
-# 2. 安装 Toolbox 和 hardhat（会自动安装兼容的 hardhat 版本）
-npm install --save-dev @nomicfoundation/hardhat-toolbox
-
-# 4. 安装 OpenZeppelin 合约
-npm install @openzeppelin/contracts
-
-# 5. 初始化 Hardhat
-npx hardhat init
-# 选择: Create a TypeScript project（Toolbox 支持 TypeScript）
-
-
+npm ci
+npm test
+npm run deploy:local
 ```
 
+The test suite covers event and storage integrity, empty identifier rejection,
+and distinct requester provenance. The local deployment command exercises the
+same deployment script used for Arbitrum Sepolia.
 
+## Deploy to Arbitrum Sepolia
 
-## 运行项目
-   ```bash
-# 安装依赖
-npm install
+Provide credentials only through your local shell or a secret manager. Never
+commit a private key or paste it into project documentation.
 
-# 编译合约：
-npx hardhat compile
-
-# 运行测试
-npx hardhat test
-    
-# 部署合约（示例）：
-npx hardhat run scripts/deploy.js --network localhost
-
-```
-
-## 项目结构
 ```bash
-contracts/
-├── README.md
-├── hardhat.config.js
-├── package.json
-├── contracts/          # 智能合约路径
-│   └── Lock.sol       # 示例合约
-├── scripts/            # 部署脚本
-│   └── deploy.js
-├── test/               # 测试文件
-│   └── Lock.js
-└── artifacts/          # 编译后的合约工件（自动生成）
+export ARBITRUM_SEPOLIA_RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
+export DEPLOYER_PRIVATE_KEY=<local-secret>
+npm run deploy:arbitrum-sepolia
 ```
+
+In PowerShell, use `$env:ARBITRUM_SEPOLIA_RPC_URL=...` and
+`$env:DEPLOYER_PRIVATE_KEY=...` instead. Keep the shell history and workstation
+security implications in mind when choosing how to inject the secret.
+
+The deployment script prints the contract address, deployer, network, and chain
+ID. Record the resulting Arbiscan address in the root README and submission
+materials before presenting the registry as deployed.

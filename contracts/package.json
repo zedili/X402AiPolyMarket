@@ -1,11 +1,13 @@
 {
   "name": "contracts",
   "version": "1.0.0",
-  "description": "此目录包含 X402AiPolyMarket 项目的智能合约。",
+  "description": "Hash-only report attestations for Signal402 on Arbitrum.",
   "main": "index.js",
   "scripts": {
     "build": "hardhat compile",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.ts",
+    "deploy:arbitrum-sepolia": "hardhat run scripts/deploy.ts --network arbitrumSepolia"
   },
   "keywords": [],
   "author": "",
