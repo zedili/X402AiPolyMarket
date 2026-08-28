@@ -1,78 +1,107 @@
-# X402AiPolyMarket
+# Signal402
 
-一个结合了 **X402 支付协议** 和 **PolyMarket 预测市场** 的 AI 驱动预测平台。
+Signal402 is a non-custodial market-intelligence layer for people and autonomous agents. It is being rebuilt for the Arbitrum Open House Singapore Buildathon from the original X402AiPolyMarket prototype.
 
-## 项目简介
+The target flow is simple:
 
-X402AiPolyMarket 是一个去中心化的预测市场平台，集成了：
+1. Read live public prediction-market probabilities for free.
+2. Request a deeper AI report with evidence, counterarguments, risks, and an independent probability estimate.
+3. Unlock that report with a per-request x402 USDC payment on Arbitrum.
 
-- **X402 支付协议**：基于 HTTP 402 状态码的互联网原生微支付解决方案
-- **PolyMarket 集成**：预测市场数据和分析
-- **AI 预测**：利用 AI 模型进行市场趋势分析和预测
-- **Solana 区块链**：基于 Solana 的支付和智能合约
+Signal402 does not custody user funds or place trades.
 
-## 什么是 X402？
+## What works now
 
-**X402** 是由 Coinbase 开发者平台推出的开源支付协议，专门用于实现互联网原生支付。它允许：
+- Live market snapshots from Polymarket's public Gamma API, normalized by server-side Next.js routes.
+- Structured DeepSeek reports that separate market probability, independent estimate, evidence, counterarguments, risks, and assumptions.
+- A real x402 v2 payment gate for `POST /api/analysis` on Arbitrum Sepolia.
+- Browser-wallet EIP-3009 authorization through the official x402 TypeScript SDK.
+- Testnet USDC settlement through the PayAI facilitator, with no custody and no facilitator private key in this repository.
+- Arbiscan transaction receipts shown after successful settlement.
+- A minimal Solidity registry for optional hash-only insight attestations, with Hardhat tests.
+- A Go API retained from the original prototype; its unfinished legacy verifier fails closed.
 
-- 网页、API 或服务直接在网络请求中收取费用
-- 无需用户注册账号或使用信用卡
-- 基于 Solana 等区块链平台实现微支付
-- 利用 HTTP 402 Payment Required 状态码作为标准
+The old Solana mock-payment page and permissive mock verifier were removed. They are not part of Signal402's active architecture.
 
-## 快速开始
+## Payment configuration
 
-### 前端
+The current Buildathon demo charges `0.01 USDC` per successful AI report on Arbitrum Sepolia:
+
+| Setting | Value |
+| --- | --- |
+| Protocol | x402 v2, `exact` scheme |
+| Network | `eip155:421614` |
+| Asset | Circle testnet USDC (`0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d`) |
+| Recipient | `0x0573f139d21fb3140155567Cba7630d3948F4ea3` |
+| Facilitator | `https://facilitator.payai.network` |
+
+The route first verifies the signed authorization, runs the AI handler, and settles only when the handler returns a successful response. A model or provider failure is not settled.
+
+## Local development
+
+### Frontend
 
 ```bash
 cd front-end
-pnpm install
+cp .env.example .env.local
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-### 后端
+Set `DEEPSEEK_API_KEY` in `front-end/.env.local` to enable AI requests. Never commit that file.
+
+`X402_FACILITATOR_URL` is optional and defaults to PayAI. A replacement facilitator must advertise x402 v2 support for `eip155:421614` from its `/supported` endpoint.
+
+Checks:
+
+```bash
+pnpm audit --prod --audit-level high
+pnpm test
+pnpm check
+pnpm build
+```
+
+GitHub Actions repeats the frontend, contract, and Go checks on every push to
+`main` and on every pull request.
+
+### Go API
 
 ```bash
 cd back-end/PolyMarket
-go mod download
+go test ./...
 go run polymarket.go -f etc/polymarket-api.yaml
 ```
 
-## X402 接入指南
+### Contracts
 
-详细的 X402 协议接入说明请参考：[X402_INTEGRATION.md](./X402_INTEGRATION.md)
-
-## 项目结构
-
-```
-X402AiPolyMarket/
-├── front-end/          # Next.js 前端应用
-│   ├── src/
-│   │   ├── lib/
-│   │   │   └── x402-client.ts  # X402 客户端工具
-│   │   └── components/          # React 组件
-│   └── app/                     # Next.js App Router
-├── back-end/           # Go 后端服务
-│   └── PolyMarket/
-│       ├── internal/
-│       │   └── middleware/
-│       │       └── x402.go      # X402 支付中间件
-│       └── etc/                 # 配置文件
-├── contracts/          # Solana 智能合约
-│   └── contracts/
-│       └── InsightToken.sol     # 代币合约
-└── X402_INTEGRATION.md # X402 接入文档
+```bash
+cd contracts
+npm ci
+npm test
 ```
 
-## 技术栈
+Hardhat compiles `contracts/src`. The unfinished token-economics contracts under `contracts/contracts` are legacy experiments and are intentionally excluded from the active build.
 
-- **前端**：Next.js, React, TypeScript, Tailwind CSS
-- **后端**：Go, go-zero
-- **区块链**：Solana
-- **智能合约**：Solidity (Hardhat)
+## Repository layout
 
-## 参考资源
+```text
+front-end/                 Next.js application, live-data routes, AI, and x402 gate
+back-end/PolyMarket/       Go API
+contracts/src/             Active Solidity contracts
+contracts/test-active/     Active Hardhat tests
+contracts/contracts/       Legacy contract experiments
+```
 
-- [X402 官方文档](https://docs.x402x.ai/)
-- [Solana 文档](https://docs.solana.com/)
-- [PolyMarket API](https://docs.polymarket.com/)
+## Security notes
+
+- All AI secrets must remain server-side.
+- The payment gate fails closed unless the official SDK and configured facilitator verify the authorization.
+- Never add a client-side AI provider key or a wallet private key to this repository.
+- The facilitator is an external dependency; production deployment should monitor it and document the trust boundary.
+- Only hashes, not private report contents, are intended for optional onchain attestation.
+
+## References
+
+- [x402 documentation](https://docs.x402.org/)
+- [Arbitrum documentation](https://docs.arbitrum.io/)
+- [Polymarket developer documentation](https://docs.polymarket.com/)

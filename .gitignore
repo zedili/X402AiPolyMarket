@@ -24,3 +24,14 @@ TestResults.xml
 .idea/
 .next/
 node_modules/
+
+# Local secrets and generated artifacts
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+*.exe
+/back-end/PolyMarket/polymarket
+/contracts/artifacts/
+/contracts/cache/
+/contracts/typechain-types/

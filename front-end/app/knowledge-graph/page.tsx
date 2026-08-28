@@ -1,10 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import SigmaGraphEditor from "@/components/SigmaGraphEditor";
+import dynamic from "next/dynamic";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Upload, RotateCcw } from "lucide-react";
+
+const SigmaGraphEditor = dynamic(
+  () => import("@/components/SigmaGraphEditor"),
+  { ssr: false },
+);
 
 export default function KnowledgeGraphPage() {
   const [nodes, setNodes] = useState<any[]>([]);

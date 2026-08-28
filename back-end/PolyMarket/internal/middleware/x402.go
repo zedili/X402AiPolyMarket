@@ -100,26 +100,10 @@ func send402Response(w http.ResponseWriter, paymentReq X402PaymentRequest) {
 	})
 }
 
-// verifyPayment 验证支付签名（需要实现 Solana 交易验证）
-func verifyPayment(signature string, config X402Config) bool {
-	// TODO: 实现 Solana 交易签名验证
-	// 1. 通过 RPC 获取交易详情
-	// 2. 验证交易是否已确认
-	// 3. 验证收款地址和金额是否正确
-	// 4. 验证交易时间戳是否在有效期内（例如：5分钟内）
-
-	logx.Infof("Verifying payment signature: %s", signature)
-
-	// 临时实现：检查签名格式（实际需要调用 Solana RPC 验证）
-	if len(signature) < 64 {
-		return false
-	}
-
-	// 实际实现应该：
-	// 1. 使用 Solana RPC 客户端获取交易
-	// 2. 验证交易状态
-	// 3. 验证交易详情（收款地址、金额等）
-	// 4. 检查是否在时间窗口内（防止重放攻击）
-
-	return true // 临时返回 true，实际需要实现验证逻辑
+// verifyPayment deliberately fails closed until the Arbitrum x402 verifier is
+// wired in. Accepting a payment merely because a header looks like a signature
+// would let any caller bypass the paywall.
+func verifyPayment(_ string, _ X402Config) bool {
+	logx.Error("X402 payment verification is not configured")
+	return false
 }

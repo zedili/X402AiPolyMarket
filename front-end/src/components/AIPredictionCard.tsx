@@ -1,216 +1,173 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { aiApi } from '@/lib/api';
+import { useState } from 'react';
+import { x402Client } from '@x402/core/client';
+import { decodePaymentResponseHeader } from '@x402/core/http';
+import type { SettleResponse } from '@x402/core/types';
+import type { ClientEvmSigner } from '@x402/evm';
+import { ExactEvmScheme } from '@x402/evm/exact/client';
+import { wrapFetchWithPayment } from '@x402/fetch';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ExternalLink,
+  Gauge,
+  Loader2,
+  Scale,
+  ShieldCheck,
+  Sparkles,
+  WalletCards,
+} from 'lucide-react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Sparkles, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import CountUp from 'react-countup';
-import type { AIPredictionResponse } from '@/lib/api/types';
+import { WalletButton } from '@/components/WalletButton';
+import type { AIInsightReport } from '@/lib/api/types';
+import {
+  X402_CHAIN_ID,
+  X402_NETWORK,
+  X402_NETWORK_NAME,
+  X402_PAY_TO,
+  X402_PRICE_USDC,
+} from '@/lib/x402/constants';
+import { useWallet } from '@/providers/wallet-provider';
 
 interface AIPredictionCardProps {
   marketId: number;
 }
 
 export function AIPredictionCard({ marketId }: AIPredictionCardProps) {
-  const [data, setData] = useState<Partial<AIPredictionResponse> | null>(null);
+  const [report, setReport] = useState<AIInsightReport | null>(null);
+  const [settlement, setSettlement] = useState<SettleResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [displayedKeyFactors, setDisplayedKeyFactors] = useState<string[]>([]);
-  const [displayedRiskFactors, setDisplayedRiskFactors] = useState<string[]>([]);
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const typingTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
-  const isTypingRef = useRef<{ keyFactors: boolean; riskFactors: boolean }>({
-    keyFactors: false,
-    riskFactors: false,
-  });
-  // 避免在 React 严格模式下初次挂载时重复发起请求
-  const lastRequestedMarketIdRef = useRef<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const {
+    address,
+    chainId,
+    isConnected,
+    switchToArbitrumSepolia,
+    signTypedData,
+  } = useWallet();
 
-  // 打字机效果：逐步显示文本数组
-  const typewriterEffect = (
-    items: string[],
-    setDisplayed: (items: string[]) => void,
-    type: 'keyFactors' | 'riskFactors',
-    delay: number = 30
-  ) => {
-    // 如果正在打字，直接更新显示（不打断）
-    if (isTypingRef.current[type]) {
-      setDisplayed(items);
+  const requestReport = async () => {
+    if (!isConnected) {
+      setError('Connect an EVM wallet before purchasing a report.');
       return;
     }
 
-    // 清除之前的定时器
-    typingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-    typingTimeoutsRef.current = [];
-    isTypingRef.current[type] = true;
-
-    const displayed: string[] = [];
-    let currentIndex = 0;
-    let currentItemIndex = 0;
-
-    const typeNext = () => {
-      if (currentItemIndex >= items.length) {
-        isTypingRef.current[type] = false;
-        return;
-      }
-
-      const currentItem = items[currentItemIndex];
-      if (currentIndex < currentItem.length) {
-        // 逐步显示当前项的字符
-        const partial = currentItem.substring(0, currentIndex + 1);
-        const newDisplayed = [...displayed];
-        newDisplayed[currentItemIndex] = partial;
-        setDisplayed([...newDisplayed]);
-        currentIndex++;
-        
-        const timeout = setTimeout(typeNext, delay);
-        typingTimeoutsRef.current.push(timeout);
-      } else {
-        // 当前项完成，开始下一项
-        displayed[currentItemIndex] = currentItem;
-        currentItemIndex++;
-        currentIndex = 0;
-        
-        if (currentItemIndex < items.length) {
-          const timeout = setTimeout(typeNext, delay * 2); // 项之间稍长延迟
-          typingTimeoutsRef.current.push(timeout);
-        } else {
-          isTypingRef.current[type] = false;
-        }
-      }
-    };
-
-    typeNext();
-  };
-
-  // 组件挂载或 marketId 变化时自动发起流式请求
-  useEffect(() => {
-    if (!marketId) return;
-
-    // 如果当前 marketId 已经请求过，避免在严格模式下重复触发
-    if (lastRequestedMarketIdRef.current === marketId) {
-      return;
-    }
-    lastRequestedMarketIdRef.current = marketId;
-
-    // 清理之前的请求
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
-
-    // 重置状态
     setLoading(true);
     setError(null);
-    setData(null);
-    setDisplayedKeyFactors([]);
-    setDisplayedRiskFactors([]);
-    typingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-    typingTimeoutsRef.current = [];
-
-    // 调用流式 API
-    aiApi.getPredictionStream(
-      marketId,
-      (partialData) => {
-        console.log('partialData', partialData);
-        // 一旦收到任何分片（哪怕还没解析出 prediction_value/confidence），就先结束骨架屏
-        // 否则如果 JSON 结构较晚才闭合，会导致页面长时间停留在 Skeleton
-        setLoading(false);
-
-        // 更新部分数据
-        setData(prev => {
-          const newData = { ...prev, ...partialData };
-          return newData;
-        });
-
-        // 如果有关键因素，实时更新（流式更新时直接显示，不打字机）
-        if (partialData.analysis?.key_factors && partialData.analysis.key_factors.length > 0) {
-          const factors = partialData.analysis.key_factors;
-          // 流式更新时直接显示，不使用打字机效果
-          // 停止打字机效果（如果正在运行）
-          if (isTypingRef.current.keyFactors) {
-            typingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-            typingTimeoutsRef.current = [];
-            isTypingRef.current.keyFactors = false;
-          }
-          setDisplayedKeyFactors(factors);
-        }
-
-        // 如果有风险因素，实时更新
-        if (partialData.analysis?.risk_factors && partialData.analysis.risk_factors.length > 0) {
-          const factors = partialData.analysis.risk_factors;
-          // 停止打字机效果（如果正在运行）
-          if (isTypingRef.current.riskFactors) {
-            typingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-            typingTimeoutsRef.current = [];
-            isTypingRef.current.riskFactors = false;
-          }
-          setDisplayedRiskFactors(factors);
-        }
-      },
-      (fullData) => {
-        // 完成时设置完整数据
-        setData(fullData);
-        setLoading(false);
-        
-        // 完成时触发打字机效果显示最终内容
-        if (fullData.analysis?.key_factors && fullData.analysis.key_factors.length > 0) {
-          typewriterEffect(fullData.analysis.key_factors, setDisplayedKeyFactors, 'keyFactors', 30);
-        } else {
-          setDisplayedKeyFactors([]);
-        }
-        
-        if (fullData.analysis?.risk_factors && fullData.analysis.risk_factors.length > 0) {
-          typewriterEffect(fullData.analysis.risk_factors, setDisplayedRiskFactors, 'riskFactors', 30);
-        } else {
-          setDisplayedRiskFactors([]);
-        }
-      },
-      (err) => {
-        setError(err);
-        setLoading(false);
+    try {
+      if (chainId !== X402_CHAIN_ID) {
+        await switchToArbitrumSepolia();
       }
-    );
 
-    // 清理函数
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+      if (!address) {
+        throw new Error('Wallet is not ready on Arbitrum Sepolia.');
       }
-      typingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-    };
-  }, [marketId]);
 
-  // 仅在“正在加载且还没有任何数据”时展示骨架屏
-  if (loading && !data) {
+      const signer: ClientEvmSigner = {
+        address,
+        signTypedData,
+      };
+      const paymentClient = new x402Client().register(
+        X402_NETWORK,
+        new ExactEvmScheme(signer),
+      );
+      const paidFetch = wrapFetchWithPayment(globalThis.fetch, paymentClient);
+
+      const response = await paidFetch('/api/analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ marketId }),
+      });
+      const body = (await response.json()) as AIInsightReport & { error?: string };
+      if (!response.ok) throw new Error(body.error ?? `Request failed (${response.status})`);
+
+      const paymentResponse = response.headers.get('payment-response');
+      if (paymentResponse) {
+        setSettlement(decodePaymentResponseHeader(paymentResponse));
+      }
+      setReport(body);
+    } catch (requestError) {
+      const message =
+        requestError instanceof Error
+          ? requestError.message
+          : 'Failed to generate report';
+      setError(
+        /reject|denied|cancelled|canceled/i.test(message)
+          ? 'Wallet request was rejected. No new payment was sent.'
+          : message,
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!report) {
     return (
       <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-32" />
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-purple-500" />
+            Signal402 AI report
+          </CardTitle>
+          <CardDescription>
+            A bounded analysis of the current market snapshot, resolution rules,
+            liquidity, and uncertainty. It does not place trades.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Skeleton className="h-32 w-full" />
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border bg-muted/35 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="text-sm font-medium">One AI report</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {X402_NETWORK_NAME} · testnet USDC
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-bold">{X402_PRICE_USDC} USDC</div>
+                <div className="text-xs text-muted-foreground">per request</div>
+              </div>
+            </div>
+            <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+              <span>
+                You sign an EIP-3009 authorization. The facilitator pays gas, and
+                Signal402 settles only after the model returns successfully.
+              </span>
+            </div>
+          </div>
+          {error && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {isConnected ? (
+            <Button onClick={requestReport} disabled={loading}>
+              {loading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <WalletCards className="mr-2 h-4 w-4" />
+              )}
+              {loading
+                ? 'Confirm in wallet, then wait…'
+                : chainId === X402_CHAIN_ID
+                  ? `Buy report · ${X402_PRICE_USDC} USDC`
+                  : `Switch network & buy · ${X402_PRICE_USDC} USDC`}
+            </Button>
+          ) : (
+            <WalletButton />
+          )}
+          <p className="break-all text-xs text-muted-foreground">
+            Recipient: {X402_PAY_TO}
+          </p>
         </CardContent>
       </Card>
     );
-  }
-
-  if (error) {
-    return (
-      <Card className="border-destructive">
-        <CardHeader>
-          <CardTitle className="text-destructive">加载失败</CardTitle>
-          <CardDescription>{error?.message || '无法加载AI预测'}</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  // 没有错误，但也还没有任何数据（理论上只会在 very early render 瞬间出现）
-  if (!data) {
-    return null;
   }
 
   return (
@@ -219,123 +176,140 @@ export function AIPredictionCard({ marketId }: AIPredictionCardProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-purple-500" />
-            AI预测
+            Signal402 AI report
           </CardTitle>
-          <CardDescription>基于机器学习模型的预测分析</CardDescription>
+          <CardDescription>
+            Generated {new Date(report.generated_at).toLocaleString()}
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* 预测值 */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
-              <div className="text-sm text-muted-foreground mb-1">预测值</div>
-              <div className="text-3xl font-bold text-purple-500">
-                {data.prediction_value !== undefined ? (
-                  <CountUp
-                    start={0}
-                    end={data.prediction_value}
-                    duration={1.2}
-                    suffix="%"
-                    decimals={Number.isInteger(data.prediction_value) ? 0 : 1}
-                    easingFn={(t, b, c, d) => {
-                      // easeOutCubic：开始快，结束慢
-                      const progress = t / d - 1;
-                      return c * (progress * progress * progress + 1) + b;
-                    }}
-                  />
-                ) : (
-                  '--'
-                )}
-              </div>
-            </div>
-            <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <div className="text-sm text-muted-foreground mb-1">置信度</div>
-              <div className="text-3xl font-bold text-blue-500">
-                {data.confidence !== undefined ? (
-                  <CountUp
-                    start={0}
-                    end={data.confidence}
-                    duration={1.2}
-                    suffix="%"
-                    decimals={Number.isInteger(data.confidence) ? 0 : 1}
-                    easingFn={(t, b, c, d) => {
-                      // easeOutCubic：开始快，结束慢
-                      const progress = t / d - 1;
-                      return c * (progress * progress * progress + 1) + b;
-                    }}
-                  />
-                ) : (
-                  '--'
-                )}
-              </div>
-            </div>
+        <CardContent className="space-y-6">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Metric
+              icon={Gauge}
+              label="Market implied"
+              value={`${report.market_probability.toFixed(1)}%`}
+            />
+            <Metric
+              icon={Sparkles}
+              label="Independent estimate"
+              value={`${report.independent_probability.toFixed(1)}%`}
+            />
+            <Metric
+              icon={Scale}
+              label="Model confidence"
+              value={`${report.confidence.toFixed(0)}%`}
+            />
           </div>
 
-          {/* 建议 */}
-          {data.suggests && (
-            <div className="p-4 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <span className="font-semibold">AI建议</span>
-              </div>
-              <Badge variant={data.suggests === 'YES' ? 'default' : 'secondary'} className="text-lg">
-                {data.suggests}
-              </Badge>
-            </div>
+          <p className="leading-7">{report.summary}</p>
+
+          <ReportList
+            icon={CheckCircle2}
+            title="Snapshot evidence"
+            items={report.evidence}
+            className="text-emerald-500"
+          />
+          <ReportList
+            icon={Scale}
+            title="Counterarguments"
+            items={report.counterarguments}
+            className="text-blue-500"
+          />
+          <ReportList
+            icon={AlertTriangle}
+            title="Risks and failure modes"
+            items={report.risks}
+            className="text-amber-500"
+          />
+          {report.assumptions.length > 0 && (
+            <ReportList
+              icon={Gauge}
+              title="Assumptions"
+              items={report.assumptions}
+              className="text-purple-500"
+            />
           )}
 
-          {/* 关键因素 */}
-          {data.analysis && (displayedKeyFactors.length > 0 || data.analysis.key_factors?.length > 0) && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                <span className="font-semibold">关键因素</span>
-              </div>
-              <ul className="space-y-1">
-                {(data.analysis.key_factors || []).map((factor, index) => (
-                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-green-500">•</span>
-                    <span className="whitespace-pre-wrap">
-                      {displayedKeyFactors[index] !== undefined ? displayedKeyFactors[index] : factor}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{report.disclaimer}</AlertDescription>
+          </Alert>
+
+          {settlement?.success && settlement.transaction && (
+            <Alert>
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <AlertDescription>
+                Payment settled on {X402_NETWORK_NAME}.{' '}
+                <a
+                  className="inline-flex items-center gap-1 font-medium underline underline-offset-4"
+                  href={`https://sepolia.arbiscan.io/tx/${settlement.transaction}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View transaction
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </AlertDescription>
+            </Alert>
           )}
 
-          {/* 风险因素 */}
-          {data.analysis && (displayedRiskFactors.length > 0 || data.analysis.risk_factors?.length > 0) && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                <span className="font-semibold">风险因素</span>
-              </div>
-              <ul className="space-y-1">
-                {(data.analysis.risk_factors || []).map((factor, index) => (
-                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-yellow-500">•</span>
-                    <span className="whitespace-pre-wrap">
-                      {displayedRiskFactors[index] !== undefined ? displayedRiskFactors[index] : factor}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* 其他信息：仅保留历史准确率 */}
-          {data.historical_accuracy !== undefined && (
-            <div className="pt-4 border-t space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">历史准确率:</span>
-                <span className="font-medium">{data.historical_accuracy}%</span>
-              </div>
-            </div>
-          )}
+          <Button variant="outline" onClick={requestReport} disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading
+              ? 'Confirm in wallet, then wait…'
+              : `Buy fresh report · ${X402_PRICE_USDC} USDC`}
+          </Button>
         </CardContent>
       </Card>
     </div>
   );
 }
 
+function Metric({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Gauge;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border bg-card/60 p-4">
+      <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+        <Icon className="h-4 w-4" />
+        {label}
+      </div>
+      <div className="text-2xl font-bold">{value}</div>
+    </div>
+  );
+}
 
+function ReportList({
+  icon: Icon,
+  title,
+  items,
+  className,
+}: {
+  icon: typeof Gauge;
+  title: string;
+  items: string[];
+  className: string;
+}) {
+  return (
+    <section>
+      <h3 className="mb-2 flex items-center gap-2 font-semibold">
+        <Icon className={`h-4 w-4 ${className}`} />
+        {title}
+      </h3>
+      <ul className="space-y-2 text-sm text-muted-foreground">
+        {items.map((item, index) => (
+          <li key={`${title}-${index}`} className="flex gap-2">
+            <span aria-hidden>•</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}

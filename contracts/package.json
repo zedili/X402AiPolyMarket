@@ -4,13 +4,14 @@
   "description": "此目录包含 X402AiPolyMarket 项目的智能合约。",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "hardhat compile",
+    "test": "hardhat test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^6.1.0"
+    "@nomicfoundation/hardhat-toolbox": "^6.1.2"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.4.0"

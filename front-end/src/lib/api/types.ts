@@ -149,6 +149,7 @@ export interface MarketListItem {
   is_hot: boolean;
   is_featured: boolean;
   created_at: string;
+  metadata?: Record<string, any>;
 }
 
 export interface MarketListResponse {
@@ -383,6 +384,21 @@ export interface AIAccuracyResponse {
     date: string;
     accuracy: number;
   }>;
+}
+
+export interface AIInsightReport {
+  market_id: number;
+  market_probability: number;
+  independent_probability: number;
+  confidence: number;
+  summary: string;
+  evidence: string[];
+  counterarguments: string[];
+  risks: string[];
+  assumptions: string[];
+  generated_at: string;
+  model: string;
+  disclaimer: string;
 }
 
 // ==================== 钱包相关类型 ====================

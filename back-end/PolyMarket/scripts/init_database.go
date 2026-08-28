@@ -1,3 +1,5 @@
+//go:build initdb
+
 package main
 
 import (

@@ -6,12 +6,11 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Layout from "@/components/Layout";
 import { WalletProvider } from "@/providers/wallet-provider";
-import WalletAuthHandler from "@/components/WalletAuthHandler";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Predict Market",
-  description: "Leverage cutting-edge AI models to analyze market trends and make informed predictions",
+  title: "Signal402 — Pay-per-request market intelligence",
+  description: "Live prediction-market snapshots and x402-gated AI reports on Arbitrum.",
 };
 
 export default function RootLayout({
@@ -30,7 +29,6 @@ export default function RootLayout({
             <ThemeProvider defaultTheme="light" switchable={true}>
               <TooltipProvider>
                 <Toaster />
-                <WalletAuthHandler />
                 <Layout>{children}</Layout>
               </TooltipProvider>
             </ThemeProvider>

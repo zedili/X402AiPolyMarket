@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, TrendingUp, Users, Clock, Sparkles } from 'lucide-react';
+import { Search, TrendingUp, Droplets, Clock, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { MarketListItem } from '@/lib/api/types';
@@ -200,6 +200,8 @@ export default function MarketsPage() {
 }
 
 function MarketCard({ market }: { market: MarketListItem }) {
+  const labels =
+    (market.metadata?.outcome_labels as string[] | undefined) ?? ['Yes', 'No'];
   return (
     <Link href={`/markets/${market.id}`}>
       <Card className="h-full hover:shadow-lg transition-all cursor-pointer group">
@@ -229,11 +231,11 @@ function MarketCard({ market }: { market: MarketListItem }) {
           {/* 价格 */}
           <div className="grid grid-cols-2 gap-2">
             <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-              <div className="text-xs text-muted-foreground mb-1">YES</div>
+              <div className="text-xs text-muted-foreground mb-1">{labels[0]}</div>
               <div className="text-lg font-bold text-green-500">{market.yes_price}%</div>
             </div>
             <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-              <div className="text-xs text-muted-foreground mb-1">NO</div>
+              <div className="text-xs text-muted-foreground mb-1">{labels[1]}</div>
               <div className="text-lg font-bold text-red-500">{market.no_price}%</div>
             </div>
           </div>
@@ -245,8 +247,8 @@ function MarketCard({ market }: { market: MarketListItem }) {
               <span>${(market.total_volume / 1000).toFixed(1)}K</span>
             </div>
             <div className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              <span>{market.participant_count}</span>
+              <Droplets className="h-4 w-4" />
+              <span>${(market.total_liquidity / 1000).toFixed(1)}K</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />

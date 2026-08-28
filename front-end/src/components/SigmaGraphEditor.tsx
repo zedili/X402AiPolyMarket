@@ -40,6 +40,15 @@ interface SigmaGraphEditorProps {
   onGraphChange?: (nodes: NodeData[], edges: EdgeData[]) => void;
 }
 
+function getClientCoordinates(event: MouseEvent | TouchEvent) {
+  if (event instanceof MouseEvent) {
+    return { x: event.clientX, y: event.clientY };
+  }
+
+  const touch = event.touches[0] ?? event.changedTouches[0];
+  return touch ? { x: touch.clientX, y: touch.clientY } : { x: 0, y: 0 };
+}
+
 export default function SigmaGraphEditor({
   className,
   initialNodes = [],
@@ -49,6 +58,8 @@ export default function SigmaGraphEditor({
   const containerRef = useRef<HTMLDivElement>(null);
   const sigmaRef = useRef<Sigma | null>(null);
   const graphRef = useRef<Graph | null>(null);
+  const isAddingEdgeRef = useRef(false);
+  const edgeSourceRef = useRef<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState("");
@@ -62,6 +73,43 @@ export default function SigmaGraphEditor({
   const [newNodeDialog, setNewNodeDialog] = useState(false);
   const [newNodeLabel, setNewNodeLabel] = useState("");
   const [newNodeColor, setNewNodeColor] = useState("#3b82f6");
+
+  // 通知图变化
+  const notifyGraphChange = useCallback(() => {
+    if (!graphRef.current || !onGraphChange) return;
+
+    const graph = graphRef.current;
+    const nodes: NodeData[] = [];
+    const edges: EdgeData[] = [];
+
+    graph.forEachNode((nodeId) => {
+      const attrs = graph.getNodeAttributes(nodeId);
+      nodes.push({
+        id: nodeId,
+        label: attrs.label || nodeId,
+        x: attrs.x || 0,
+        y: attrs.y || 0,
+        size: attrs.size || 15,
+        color: attrs.color || "#3b82f6",
+      });
+    });
+
+    graph.forEachEdge((edgeId, attrs, source, target) => {
+      edges.push({
+        id: edgeId,
+        source,
+        target,
+        label: attrs.label || "",
+      });
+    });
+
+    onGraphChange(nodes, edges);
+  }, [onGraphChange]);
+
+  useEffect(() => {
+    isAddingEdgeRef.current = isAddingEdge;
+    edgeSourceRef.current = edgeSource;
+  }, [isAddingEdge, edgeSource]);
 
   // 初始化图
   useEffect(() => {
@@ -129,12 +177,15 @@ export default function SigmaGraphEditor({
 
     // 节点点击事件
     sigma.on("clickNode", ({ node }) => {
-      if (isAddingEdge && edgeSource) {
+      const source = edgeSourceRef.current;
+      if (isAddingEdgeRef.current && source) {
         // 添加边
-        if (edgeSource !== node && !graph.hasEdge(edgeSource, node)) {
-          graph.addEdge(edgeSource, node, { label: "" });
+        if (source !== node && !graph.hasEdge(source, node)) {
+          graph.addEdge(source, node, { label: "" });
           setIsAddingEdge(false);
           setEdgeSource(null);
+          isAddingEdgeRef.current = false;
+          edgeSourceRef.current = null;
           notifyGraphChange();
         }
       } else {
@@ -147,6 +198,8 @@ export default function SigmaGraphEditor({
       setSelectedNode(null);
       setIsAddingEdge(false);
       setEdgeSource(null);
+      isAddingEdgeRef.current = false;
+      edgeSourceRef.current = null;
     });
 
     // 节点双击事件（编辑）
@@ -196,19 +249,21 @@ export default function SigmaGraphEditor({
 
     // 右键菜单
     sigma.on("rightClickNode", ({ node, event }) => {
-      event.preventDefault();
+      event.original.preventDefault();
+      const coordinates = getClientCoordinates(event.original);
       setContextMenu({
-        x: event.clientX,
-        y: event.clientY,
+        x: coordinates.x,
+        y: coordinates.y,
         nodeId: node,
       });
     });
 
     sigma.on("rightClickStage", ({ event }) => {
-      event.preventDefault();
+      event.original.preventDefault();
+      const coordinates = getClientCoordinates(event.original);
       setContextMenu({
-        x: event.clientX,
-        y: event.clientY,
+        x: coordinates.x,
+        y: coordinates.y,
         nodeId: null,
       });
     });
@@ -220,38 +275,6 @@ export default function SigmaGraphEditor({
       sigma.kill();
     };
   }, [notifyGraphChange]);
-
-  // 通知图变化
-  const notifyGraphChange = useCallback(() => {
-    if (!graphRef.current || !onGraphChange) return;
-
-    const graph = graphRef.current;
-    const nodes: NodeData[] = [];
-    const edges: EdgeData[] = [];
-
-    graph.forEachNode((nodeId) => {
-      const attrs = graph.getNodeAttributes(nodeId);
-      nodes.push({
-        id: nodeId,
-        label: attrs.label || nodeId,
-        x: attrs.x || 0,
-        y: attrs.y || 0,
-        size: attrs.size || 15,
-        color: attrs.color || "#3b82f6",
-      });
-    });
-
-    graph.forEachEdge((edgeId, attrs, source, target) => {
-      edges.push({
-        id: edgeId,
-        source,
-        target,
-        label: attrs.label || "",
-      });
-    });
-
-    onGraphChange(nodes, edges);
-  }, [onGraphChange]);
 
   // 保存编辑
   const handleSaveEdit = () => {
@@ -298,6 +321,8 @@ export default function SigmaGraphEditor({
     if (!selectedNode) return;
     setIsAddingEdge(true);
     setEdgeSource(selectedNode);
+    isAddingEdgeRef.current = true;
+    edgeSourceRef.current = selectedNode;
     setContextMenu(null);
   };
 
@@ -382,6 +407,8 @@ export default function SigmaGraphEditor({
               onClick={() => {
                 setIsAddingEdge(false);
                 setEdgeSource(null);
+                isAddingEdgeRef.current = false;
+                edgeSourceRef.current = null;
               }}
             >
               <X className="h-3 w-3" />

@@ -24,7 +24,7 @@ export function ThemeProvider({
   switchable = false,
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
-    if (switchable) {
+    if (switchable && typeof window !== "undefined") {
       const stored = localStorage.getItem("theme");
       return (stored as Theme) || defaultTheme;
     }

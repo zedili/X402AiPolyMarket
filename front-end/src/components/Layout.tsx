@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Brain, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { WalletLogin } from "@/components/WalletLogin";
+import { WalletButton } from "@/components/WalletButton";
 import PageTransition from "@/components/PageTransition";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -16,10 +15,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { label: "PORTFOLIO", href: "/portfolio" },
-    { label: "LEADERBOARD", href: "/leaderboard" },
-    { label: "WALLET", href: "/wallet" },
-    { label: "PROFILE", href: "/profile" },
+    { label: "MARKETS", href: "/#markets" },
+    { label: "HOW IT WORKS", href: "/#how-it-works" },
   ];
 
   return (
@@ -42,10 +39,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </div>
               <div className="flex flex-col">
                 <span className="font-display font-bold text-lg tracking-wider leading-none text-white group-hover:text-primary transition-colors">
-                  AI PREDICT
+                  SIGNAL402
                 </span>
                 <span className="font-mono text-[10px] text-muted-foreground tracking-[0.2em] leading-none">
-                  MARKET
+                  ARBITRUM
                 </span>
               </div>
             </Link>
@@ -75,12 +72,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-2">
               <ThemeToggle />
-              <ConnectButton
-                chainStatus="icon"
-                showBalance={false}
-                accountStatus="address"
-              />
-              {/* <WalletLogin /> */}
+              <WalletButton />
             </div>
             <button
               className="md:hidden p-2 text-muted-foreground hover:text-foreground"
@@ -112,11 +104,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
             <div className="w-full mt-4">
-              <ConnectButton
-                chainStatus="none"
-                showBalance={false}
-                accountStatus="address"
-              />
+              <WalletButton className="w-full" />
             </div>
           </nav>
         </div>
@@ -132,17 +120,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Brain className="h-4 w-4" />
-            <span>© 2025 AI PREDICT MARKET. Powered by Advanced AI.</span>
+            <span>© 2026 Signal402. Information only; no trade execution.</span>
           </div>
           
           <div className="flex items-center gap-6 text-sm font-medium text-muted-foreground">
-            <a href="#" className="hover:text-primary transition-colors">ABOUT</a>
-            <a href="#" className="hover:text-primary transition-colors">DOCS</a>
-            <a href="#" className="hover:text-primary transition-colors">SUPPORT</a>
+            <a href="https://docs.x402.org/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">X402 DOCS</a>
+            <a href="https://docs.arbitrum.io/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">ARBITRUM</a>
+            <a href="https://docs.polymarket.com/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">DATA SOURCE</a>
           </div>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground/50 border border-border/30 px-3 py-1 rounded-full">
-            <span>Made with Manus</span>
+            <span>One builder + AI agents</span>
           </div>
         </div>
       </footer>
