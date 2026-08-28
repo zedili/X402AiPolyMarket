@@ -21,6 +21,20 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "Signal402",
     type: "website",
+    images: [
+      {
+        url: "/images/signal402-project-cover.png",
+        width: 1254,
+        height: 1254,
+        alt: "Signal402 — x402 market intelligence on Arbitrum",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Signal402 — Pay-per-request market intelligence",
+    description: "Live prediction-market snapshots and x402-gated AI reports on Arbitrum.",
+    images: ["/images/signal402-project-cover.png"],
   },
 };
 
