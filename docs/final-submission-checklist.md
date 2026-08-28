@@ -13,7 +13,9 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 - [x] Post-rotation settlement receipt: https://sepolia.arbiscan.io/tx/0x4c0e782d706b544bb154116457eb8c3d447fe86a1b6e82ca4f94043221cdadf2
 - [x] AI/provider failure is covered by a test that proves settlement is not called.
 - [x] `Signal402Registry` contract tests and the deployment script pass on a local Hardhat chain.
-- [ ] With explicit owner approval, deploy `Signal402Registry` to Arbitrum Sepolia and record its Arbiscan address.
+- [x] With explicit owner approval, deployed `Signal402Registry` to Arbitrum Sepolia: https://sepolia.arbiscan.io/address/0xc896eb3b013a60deca7029dc2aa4f0da9a5faf82
+- [x] Independently verified the deployment receipt, deployer, zero value, runtime bytecode, and function-call behavior.
+- [x] Sourcify exact-match source verification: https://repo.sourcify.dev/421614/0xc896eB3B013a60deCA7029dc2aa4F0da9a5faf82
 
 ## Judge materials
 

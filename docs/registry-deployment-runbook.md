@@ -24,6 +24,45 @@ Official reference: [Arbitrum Solidity + Remix quickstart](https://docs.arbitrum
 Recompute the source hash immediately before deployment and stop if it differs.
 Run `npm test` and `npm run deploy:local` from `contracts/`; both must pass.
 
+## Completed deployment record
+
+The owner-approved deployment was completed on Arbitrum Sepolia on
+2026-08-28. Use only the nonce-0 deployment as the canonical project registry.
+
+- Canonical contract: `0xc896eb3b013a60deca7029dc2aa4f0da9a5faf82`
+- Canonical transaction: `0x5af65b36f980448d63127b73120c6ab40a7b64a7a81cfa977bd8e710765d61f4`
+- Block: `302861436`
+- Deployer: `0x0573f139d21fb3140155567cba7630d3948f4ea3`
+- Transaction nonce: `0`
+- Value: `0 wei`
+- Gas limit: `1000000`
+- Gas used: `482155`
+- Runtime code size: `1730` bytes
+- Runtime code hash: `0x5c14c6ef1925a462bbc828c8a8613c269aad8bd50387ba364181390f5e0f6a7b`
+- Sourcify match: `exact_match` for creation and runtime bytecode
+- Sourcify match ID: `46847913`
+- Sourcify record: https://repo.sourcify.dev/421614/0xc896eB3B013a60deCA7029dc2aa4F0da9a5faf82
+
+The Remix deploy button was clicked twice after increasing the gas limit. The
+second transaction also succeeded and produced an identical runtime bytecode,
+but it is an accidental duplicate and must not be presented as the project
+registry:
+
+- Duplicate contract: `0x40d1f09d9537862c5174ee1342b7e4c7d811b9a5`
+- Duplicate transaction: `0xcb484ffc34917808b48c9a0c14e50a7cfd3edd694f6807b0fbe19ba2112e079f`
+- Transaction nonce: `1`
+
+Independent RPC verification confirmed both receipts succeeded, both
+transactions were zero-value contract creations by the intended deployer, and
+the two runtime bytecodes are identical. An `eth_call` against the canonical
+contract rejected an empty market ID with `market id required`; a valid call
+simulation returned an attestation ID. Sourcify then independently recompiled
+the submitted standard JSON input and reported exact matches for both creation
+and runtime bytecode. Its attempt to forward the verification to Etherscan/
+Arbiscan hit that service's daily 500-submission limit, so the project must not
+claim an Arbiscan source-code verification until that separate explorer status
+is confirmed.
+
 ## Owner approval boundary
 
 Do not perform either action without explicit owner approval:

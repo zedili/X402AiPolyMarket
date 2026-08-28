@@ -20,7 +20,7 @@ Live production app: https://signal402.vercel.app
 - Browser-wallet EIP-3009 authorization through the official x402 TypeScript SDK.
 - Testnet USDC settlement through the PayAI facilitator, with no custody and no facilitator private key in this repository.
 - Arbiscan transaction receipts shown after successful settlement.
-- A minimal Solidity registry for optional hash-only insight attestations, with Hardhat tests.
+- A minimal Solidity registry for optional hash-only insight attestations, with Hardhat tests and a live Arbitrum Sepolia deployment.
 - A Go API retained from the original prototype; its unfinished legacy verifier fails closed.
 - A permanent Vercel production deployment whose live-data pages and x402 `402 Payment Required` response have been verified.
 - A successful end-to-end 0.01 test-USDC settlement with a structured production AI report and an Arbitrum Sepolia receipt.
@@ -115,6 +115,9 @@ contracts/contracts/       Legacy contract experiments
 - [Judging-readiness matrix](docs/judging-readiness.md)
 - [Verified settlement receipt](https://sepolia.arbiscan.io/tx/0x7a2eea1ee62ef8f02e2731498f6bb77072db477f33a258af5d8c53106aada4e5)
 - [Post-key-rotation settlement receipt](https://sepolia.arbiscan.io/tx/0x4c0e782d706b544bb154116457eb8c3d447fe86a1b6e82ca4f94043221cdadf2)
+- [Signal402Registry on Arbitrum Sepolia](https://sepolia.arbiscan.io/address/0xc896eb3b013a60deca7029dc2aa4f0da9a5faf82)
+- [Registry deployment transaction](https://sepolia.arbiscan.io/tx/0x5af65b36f980448d63127b73120c6ab40a7b64a7a81cfa977bd8e710765d61f4)
+- [Sourcify exact-match source verification](https://repo.sourcify.dev/421614/0xc896eB3B013a60deCA7029dc2aa4F0da9a5faf82)
 
 ## References
 

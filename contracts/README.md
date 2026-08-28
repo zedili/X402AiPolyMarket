@@ -22,6 +22,16 @@ same deployment script used for Arbitrum Sepolia.
 
 ## Deploy to Arbitrum Sepolia
 
+Canonical Buildathon deployment:
+
+- Contract: `0xc896eb3b013a60deca7029dc2aa4f0da9a5faf82`
+- Transaction: `0x5af65b36f980448d63127b73120c6ab40a7b64a7a81cfa977bd8e710765d61f4`
+- Network: Arbitrum Sepolia (`421614`)
+- Sourcify: https://repo.sourcify.dev/421614/0xc896eB3B013a60deCA7029dc2aa4F0da9a5faf82
+
+The complete receipt and independent RPC checks are recorded in the
+[deployment runbook](../docs/registry-deployment-runbook.md).
+
 For an owner-wallet deployment, use the
 [official Arbitrum Remix workflow](https://docs.arbitrum.io/build-decentralized-apps/quickstart-solidity-remix):
 compile `src/Signal402Registry.sol` with Solidity 0.8.28, select the browser

@@ -28,6 +28,7 @@ Signal402 turns one report into one transaction:
 - Payment: 0.01 test USDC per successful report.
 - Protocol: x402 v2, `exact` EVM scheme, with browser-wallet EIP-3009 authorization.
 - Settlement: facilitator-backed verification and settlement; Signal402 holds no facilitator private key and does not custody user funds.
+- Attestation registry: optional hash-only attestations at `0xc896eb3b013a60deca7029dc2aa4f0da9a5faf82` on Arbitrum Sepolia.
 
 ## Technical stack
 
@@ -58,6 +59,7 @@ Signal402 is an MVP with verified technical execution; it does not yet claim use
 - Added Arbitrum Sepolia browser-wallet authorization and facilitator settlement.
 - Added strict server-side report validation and fail-closed settlement behavior.
 - Added protocol, smart-contract, backend, frontend, build, and dependency-audit checks.
+- Deployed and independently verified the optional `Signal402Registry` hash-attestation contract on Arbitrum Sepolia.
 - Deployed the permanent production app and verified that it returns live market data and a valid x402 `402 Payment Required` response.
 
 ## Challenges
@@ -79,6 +81,9 @@ x402 is most useful when it is treated as an application boundary, not a checkou
 - Production AI readiness endpoint: https://signal402.vercel.app/api/analysis/status
 - Successful Arbitrum Sepolia settlement: https://sepolia.arbiscan.io/tx/0x7a2eea1ee62ef8f02e2731498f6bb77072db477f33a258af5d8c53106aada4e5
 - Post-key-rotation settlement: https://sepolia.arbiscan.io/tx/0x4c0e782d706b544bb154116457eb8c3d447fe86a1b6e82ca4f94043221cdadf2
+- Canonical registry: https://sepolia.arbiscan.io/address/0xc896eb3b013a60deca7029dc2aa4f0da9a5faf82
+- Registry deployment: https://sepolia.arbiscan.io/tx/0x5af65b36f980448d63127b73120c6ab40a7b64a7a81cfa977bd8e710765d61f4
+- Registry source verification: https://repo.sourcify.dev/421614/0xc896eB3B013a60deCA7029dc2aa4F0da9a5faf82
 - Payment amount: 0.01 test USDC (`10000` base units).
 - The successful response rendered the structured DeepSeek report and settlement receipt in the production UI.
 
