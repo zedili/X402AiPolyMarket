@@ -114,6 +114,8 @@ contracts/contracts/       Legacy contract experiments
 - [Submission copy](docs/submission-copy.md)
 - [Judging-readiness matrix](docs/judging-readiness.md)
 - [Judge Q&A](docs/judge-qa.md)
+- [Terms risk review](docs/terms-risk-review.md)
+- [In-window Buildathon workplan](docs/buildathon-workplan.md)
 - [Verified settlement receipt](https://sepolia.arbiscan.io/tx/0x7a2eea1ee62ef8f02e2731498f6bb77072db477f33a258af5d8c53106aada4e5)
 - [Post-key-rotation settlement receipt](https://sepolia.arbiscan.io/tx/0x4c0e782d706b544bb154116457eb8c3d447fe86a1b6e82ca4f94043221cdadf2)
 - [Signal402Registry on Arbitrum Sepolia](https://sepolia.arbiscan.io/address/0xc896eb3b013a60deca7029dc2aa4f0da9a5faf82)

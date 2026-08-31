@@ -22,6 +22,12 @@ contract, and the UI links to the transaction receipt after success.
 
 ## Published judging criteria
 
+The public HackQuest page and the official terms use overlapping but not
+identical wording. The terms additionally score use of Arbitrum, potential
+impact, presentation quality, and novelty. The submission and demo must make
+those dimensions explicit rather than relying only on the four public-page
+criteria below.
+
 | Criterion | Current evidence | Honest limitation / next proof |
 | --- | --- | --- |
 | Smart contract quality | `Signal402Registry` is minimal, permissionless, stores hashes rather than reports or funds, has three active Hardhat tests, and is deployed on Arbitrum Sepolia. Independent RPC checks confirmed the deployment receipt, non-empty runtime bytecode, empty-market rejection, and a successful valid-call simulation. Sourcify reports exact matches for both creation and runtime bytecode. The production payment path uses official x402 packages and settles only after a valid AI result. | The registry is optional and is not required for the core payment path. Arbiscan's automatic source-verification import hit its daily submission limit; use the public Sourcify exact-match record until that separate explorer view is available. |
@@ -56,8 +62,9 @@ contract, and the UI links to the transaction receipt after success.
 - HackQuest shows the account as registered. Signal402 is 100/100 ready, but
   its public `Submitted Buildathons` list remains empty until the submission
   window opens and the final submission is completed.
-- The published submission window is Sep 14, 2026 01:01 through Oct 4, 2026
-  23:59 (times displayed by HackQuest while viewed in Asia/Shanghai).
+- HackQuest displays a submission window of Sep 14, 2026 01:01 through Oct 4,
+  2026 23:59 in Asia/Shanghai. The official terms instead state Oct 1, 2026,
+  11:59 PM SGT. Operate to the earlier deadline and seek written clarification.
 - The project page reports 100/100 readiness. The existing Signal402 cover was
   uploaded to HackQuest and then verified on the public project page. The
   personal profile bio and pitch video are not part of this readiness
@@ -70,3 +77,8 @@ contract, and the UI links to the transaction receipt after success.
   Workshops & Sessions tab directs participants to the Arbitrum Discord
   `#open-house` channel for workshop and feedback-session updates and strongly
   encourages attending feedback sessions.
+- The event overview and terms section 3.1 allow existing projects that receive
+  more-than-trivial development during the Buildathon, but the attached Code of
+  Conduct says actual development must not begin before the event. Preserve the
+  pre-event baseline, obtain organizer clarification, and ship a substantive
+  in-window feature before submitting.

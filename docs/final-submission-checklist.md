@@ -40,8 +40,11 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 ## Final external action
 
 - [x] Re-ran frontend tests, TypeScript checks, the Next.js production build, contract tests, Go tests, and production HTTP smoke checks on Aug 31, 2026.
-- [x] Confirmed the published submission window: Sep 14, 2026 01:01 through Oct 4, 2026 23:59 (HackQuest page time, observed in Asia/Shanghai).
-- [ ] Review the official Singapore terms for solo-builder eligibility, AI assistance, IP rights, milestone obligations, and Founder House attendance before accepting or submitting.
+- [x] Confirmed the HackQuest-displayed submission window: Sep 14, 2026 01:01 through Oct 4, 2026 23:59 (observed in Asia/Shanghai).
+- [x] Reviewed all 14 pages of the official Singapore terms for eligibility, originality, IP, publicity, data sharing, prize, and milestone obligations; see `docs/terms-risk-review.md`.
+- [ ] Resolve the terms conflict on existing projects and the Oct 1 versus Oct 4 submission deadline with the organizers; operate to Oct 1 unless written clarification says otherwise.
+- [ ] Preserve the pre-event baseline and complete more-than-trivial development during the official Buildathon window.
+- [ ] Obtain explicit owner acceptance of the official terms, including publicity, data sharing, grant-agreement, compliance, tax, and potential milestone obligations.
 - [ ] Confirm the HackQuest submission window is currently open before submitting.
 - [ ] Obtain explicit owner confirmation for the final submission.
 - [ ] Submit Signal402 and save the confirmation page or submission identifier.
