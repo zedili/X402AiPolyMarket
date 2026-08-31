@@ -50,3 +50,21 @@ contract, and the UI links to the transaction receipt after success.
   `Signal402Registry` address. A second identical testnet deployment caused by
   a double click is documented in the deployment runbook and is not the
   project registry.
+
+## Submission operations
+
+- HackQuest shows the account as registered and associates Signal402 with the
+  Singapore Buildathon.
+- The published submission window is Sep 14, 2026 01:01 through Oct 4, 2026
+  23:59 (times displayed by HackQuest while viewed in Asia/Shanghai).
+- The project editor currently reports 90/100 readiness. Inspection of the
+  deployed HackQuest scoring code confirms that `logo` is the missing 10-point
+  field; the populated fields account for the other 90 points. Re-upload the
+  existing Signal402 cover and verify both persistence and a 100/100 score
+  before treating the project profile as complete. The personal profile bio
+  and pitch video are not part of this readiness calculation.
+- Both uploaded videos are available from HackQuest and match the local file
+  sizes, but their project fields are reversed: the public `Demo Video` tab
+  loads the pitch asset and the `Pitch Video` tab loads the demo asset. Replace
+  the two field values with the corresponding local files and verify the
+  public labels before final submission.

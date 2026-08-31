@@ -23,7 +23,8 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 - [x] HackQuest project: https://arbitrum-singapore.hackquest.io/projects/Signal402
 - [x] Demo video uploaded to HackQuest.
 - [x] Pitch video uploaded to HackQuest.
-- [x] Project cover uploaded to HackQuest.
+- [ ] Correct the two HackQuest video-field assignments: the public `Demo Video` tab currently loads the pitch file and the `Pitch Video` tab loads the demo file; verify each label after re-uploading.
+- [ ] Upload `front-end/public/images/signal402-project-cover.png` as the HackQuest project cover and confirm that it persists after saving.
 - [x] Project wallet connected: `0x0573f139d21fb3140155567Cba7630d3948F4ea3`.
 - [x] Submission copy reviewed: `docs/submission-copy.md`.
 - [x] Demo script reviewed: `docs/demo-script.md`.
@@ -39,6 +40,7 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 ## Final external action
 
 - [ ] Re-run CI and production smoke tests after the final code change.
-- [ ] Confirm the HackQuest submission window is open.
+- [x] Confirmed the published submission window: Sep 14, 2026 01:01 through Oct 4, 2026 23:59 (HackQuest page time, observed in Asia/Shanghai).
+- [ ] Confirm the HackQuest submission window is currently open before submitting.
 - [ ] Obtain explicit owner confirmation for the final submission.
 - [ ] Submit Signal402 and save the confirmation page or submission identifier.
