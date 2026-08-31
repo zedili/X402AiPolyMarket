@@ -53,8 +53,9 @@ contract, and the UI links to the transaction receipt after success.
 
 ## Submission operations
 
-- HackQuest shows the account as registered and associates Signal402 with the
-  Singapore Buildathon.
+- HackQuest shows the account as registered. Signal402 is 100/100 ready, but
+  its public `Submitted Buildathons` list remains empty until the submission
+  window opens and the final submission is completed.
 - The published submission window is Sep 14, 2026 01:01 through Oct 4, 2026
   23:59 (times displayed by HackQuest while viewed in Asia/Shanghai).
 - The project page reports 100/100 readiness. The existing Signal402 cover was
@@ -65,3 +66,7 @@ contract, and the UI links to the transaction receipt after success.
   local file sizes, and resolve from the correct Demo and Pitch fields. A
   previous read during the tab-transition animation briefly observed the
   exiting video element and was not evidence of reversed fields.
+- The event currently lists no individual workshop cards. Its official
+  Workshops & Sessions tab directs participants to the Arbitrum Discord
+  `#open-house` channel for workshop and feedback-session updates and strongly
+  encourages attending feedback sessions.
