@@ -44,6 +44,7 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 - [x] Reviewed all 14 pages of the official Singapore terms for eligibility, originality, IP, publicity, data sharing, prize, and milestone obligations; see `docs/terms-risk-review.md`.
 - [ ] Resolve the terms conflict on existing projects and the Oct 1 versus Oct 4 submission deadline with the organizers; operate to Oct 1 unless written clarification says otherwise.
 - [ ] Preserve the pre-event baseline and complete more-than-trivial development during the official Buildathon window.
+- [ ] Reconcile every field against `docs/submission-field-map.md`, including location, prize track, deployment details, and AI-assistance disclosure.
 - [ ] Obtain explicit owner acceptance of the official terms, including publicity, data sharing, grant-agreement, compliance, tax, and potential milestone obligations.
 - [ ] Confirm the HackQuest submission window is currently open before submitting.
 - [ ] Obtain explicit owner confirmation for the final submission.
