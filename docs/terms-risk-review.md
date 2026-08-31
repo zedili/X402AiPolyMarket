@@ -131,6 +131,12 @@ owner's account. Gmail's Sent folder was checked after delivery. Awaiting a
 written response; until then, use Oct 1, 2026 at 11:59 PM SGT as the controlling
 submission deadline.
 
+The Aug 31 follow-up audit also found a reward-announcement mismatch: HackQuest
+shows Oct 12, 2026 at 14:00, while the reviewed Terms PDF shows Oct 4, 2026 at
+17:00 SGT. Treat both as provisional and monitor the organizer's written reply
+and live materials. This mismatch does not change the conservative submission
+deadline.
+
 **To:** engineering@arbitrum.foundation
 
 **Subject:** Clarification on existing projects and official deadline — Open

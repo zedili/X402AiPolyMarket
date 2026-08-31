@@ -47,6 +47,7 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 - [ ] Preserve the pre-event baseline and complete more-than-trivial development during the official Buildathon window.
 - [ ] Reconcile every field against `docs/submission-field-map.md`, including location, prize track, deployment details, and AI-assistance disclosure.
 - [x] Owner confirmed `zedili` and `zdl` are the same person and that the other historical project-team contributors authorized submission use.
+- [ ] Replace the live HackQuest **Progress During Hackathon** field with the truthful pre-window baseline text in `docs/submission-field-map.md`; obtain owner confirmation immediately before saving the public edit.
 - [ ] Replace the inherited hero and icon assets during the official event window and record complete provenance; see `docs/ip-provenance-review.md`.
 - [ ] Resolve final media rights and repository licensing questions in `docs/ip-provenance-review.md`.
 - [ ] Complete a full-slide visual and source audit of the final pitch deck and videos after the in-window update.

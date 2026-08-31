@@ -5,13 +5,14 @@ House Singapore Buildathon from qualifying implementation completed during the
 official event window. Never describe a pre-event item as “built during the
 Buildathon.”
 
-## Immutable local reference
+## Immutable public reference
 
 - Tag: `arbitrum-singapore-pre-event-2026-08-31`
 - Commit: `ea31aae7d177644c8a42dcceddde133df5e16a0d`
 - Tree: `62961668af0d33306645057e08baa8066ec07eb4`
 - Recorded: Aug 31, 2026, before the Sep 14 official start
-- Public tag status: local only until the owner approves a public Git push
+- Public tag status: pushed to `origin` on Aug 31, 2026 after owner approval
+- Annotated tag object: `91a420b9d3eddac40689198a9da6eaee7ea27bec`
 
 The baseline tag points to the complete repository state, including product
 code, tests, videos, judging material, and the terms/workplan review available
@@ -49,10 +50,11 @@ not the evidence for more-than-trivial in-window development.
 ## Pre-event public deployment state
 
 At baseline creation, `origin/main` was
-`ab6e455e835396e4f88798a95ca259818cf3710d`. The local branch contained four
-additional commits awaiting explicit owner approval for public push. Those
-commits contain a clean-build fix and event-preparation documentation, not the
-planned in-window feature.
+`ab6e455e835396e4f88798a95ca259818cf3710d`. The owner subsequently approved
+the public push of the baseline tag and preparation commits. As of the final
+Aug 31 pre-event audit, commits after the tag changed only documentation; they
+did not add the planned in-window product functionality. Use the tag target,
+not the moving `main` branch, as the before/after comparison point.
 
 ## In-window evidence rules
 
@@ -69,4 +71,3 @@ After Sep 14, 2026:
 
 The final submission should link this baseline and the post-event head so a
 judge can independently inspect the substantive difference.
-

@@ -29,11 +29,11 @@ the deadline, but do not rely on that as a recovery strategy.
 | Project name | `Signal402` | Ready |
 | One-line intro | `Signal402 lets people and autonomous agents purchase one structured prediction-market report with one non-custodial x402 USDC payment on Arbitrum.` | Ready |
 | MVP / live demo | https://signal402.vercel.app | Ready |
-| Repository | https://github.com/zedili/X402AiPolyMarket | Ready; public push pending owner approval |
+| Repository | https://github.com/zedili/X402AiPolyMarket | Ready; public baseline tag and preparation commits pushed with owner approval |
 | Demo video | HackQuest Demo Video field and repository copy | Ready; update after in-window work |
 | Pitch video | HackQuest Pitch Video field and repository copy | Ready; update after in-window work |
 | Description | `docs/submission-copy.md` | Ready; refresh after in-window work |
-| Progress During Hackathon | Post-baseline changelog only | Pending official window |
+| Progress During Hackathon | Post-baseline changelog only | Public field requires a pre-window correction; final value pending official window |
 | Team | Solo founder and full-stack builder, supported by AI development agents | Ready |
 | Team role | Founder / Full-stack builder | Ready |
 | Wallet | `0x0573f139d21fb3140155567Cba7630d3948F4ea3` | Connected; re-check ownership and network |
@@ -45,6 +45,25 @@ the deadline, but do not rely on that as a recovery strategy.
 | Fundraising status | Bootstrapped; not currently fundraising | Ready |
 | Product sectors | AI, Infra, DeFi | Ready |
 | Tech stack | React, Next.js, TypeScript, Node, Solidity, Web3, Ethers, Go, x402 | Ready |
+
+## Pre-window public-field correction
+
+The live HackQuest project page was audited on Aug 31, 2026. Its current
+**Progress During Hackathon** field describes pre-event functionality as though
+it were already completed during the event. Because the official window has not
+started, replace it with the following truthful interim text before Sep 14:
+
+> Pre-event baseline recorded on Aug 31, 2026; none of the items below are
+> claimed as Buildathon-period work. Signal402 already has a live Polymarket
+> data experience, a server-side structured AI report, an x402 v2 test-USDC
+> payment flow on Arbitrum Sepolia, fail-closed settlement tests, a deployed
+> hash-attestation registry, CI, videos, and a production deployment. Substantive
+> Buildathon development has not started. Work completed from Sep 14 onward will
+> be recorded separately in a commit-linked changelog and this field will be
+> replaced with verified in-window progress before final submission.
+
+This is a public HackQuest edit. Obtain explicit owner confirmation immediately
+before saving it.
 
 ## Event-specific fields to resolve
 
@@ -99,4 +118,3 @@ Save all of the following under a timestamped local evidence directory:
 - in-window x402 settlement and registry attestation receipts;
 - final copies or hashes of the demo and pitch videos;
 - organizer clarification on deadline and existing-project eligibility.
-
