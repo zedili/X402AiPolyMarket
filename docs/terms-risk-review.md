@@ -126,6 +126,11 @@ documented.
 
 ## Organizer clarification draft
 
+**Status:** Sent to the organizer on Aug 31, 2026 at 21:56 (UTC+8) from the
+owner's account. Gmail's Sent folder was checked after delivery. Awaiting a
+written response; until then, use Oct 1, 2026 at 11:59 PM SGT as the controlling
+submission deadline.
+
 **To:** engineering@arbitrum.foundation
 
 **Subject:** Clarification on existing projects and official deadline — Open
@@ -152,4 +157,3 @@ engineering and documentation assistance while retaining ownership and final
 decision-making. Please also confirm that this disclosed use is permitted.
 
 Thank you.
-

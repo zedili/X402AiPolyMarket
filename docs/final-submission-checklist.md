@@ -42,7 +42,8 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 - [x] Re-ran frontend tests, TypeScript checks, the Next.js production build, contract tests, Go tests, and production HTTP smoke checks on Aug 31, 2026.
 - [x] Confirmed the HackQuest-displayed submission window: Sep 14, 2026 01:01 through Oct 4, 2026 23:59 (observed in Asia/Shanghai).
 - [x] Reviewed all 14 pages of the official Singapore terms for eligibility, originality, IP, publicity, data sharing, prize, and milestone obligations; see `docs/terms-risk-review.md`.
-- [ ] Resolve the terms conflict on existing projects and the Oct 1 versus Oct 4 submission deadline with the organizers; operate to Oct 1 unless written clarification says otherwise.
+- [x] Sent the organizer a clarification request on Aug 31, 2026 covering existing-project eligibility, the Oct 1 versus Oct 4 deadline conflict, and disclosed AI-agent assistance.
+- [ ] Obtain and record the organizer's written resolution; operate to Oct 1 unless written clarification says otherwise.
 - [ ] Preserve the pre-event baseline and complete more-than-trivial development during the official Buildathon window.
 - [ ] Reconcile every field against `docs/submission-field-map.md`, including location, prize track, deployment details, and AI-assistance disclosure.
 - [x] Owner confirmed `zedili` and `zdl` are the same person and that the other historical project-team contributors authorized submission use.
