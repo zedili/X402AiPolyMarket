@@ -7,11 +7,20 @@ checklist, not a legal conclusion.
 ## Repository authorship
 
 The repository root commit is attributed to `zedili`, while the current event
-preparation is primarily attributed to `zdl`. The Git history also contains
+preparation is primarily attributed to `zdl`. The owner confirmed on Aug 31,
+2026 that both aliases belong to the same person. The Git history also contains
 material commits from `wuyangfan`, plus smaller contributions under
-`123skkda`, `zhaohaisen`, `Aist\\Administrator`, and `User`.
+`123skkda`, `zhaohaisen`, `Aist\\Administrator`, and `User`; the owner confirmed
+that these were early project-team members and that their work is authorized
+for use in the submission.
 
-Before final submission, the owner must confirm:
+The final submission must continue to distinguish the current solo Buildathon
+team from the historical project team. Preserve contributor history and do not
+claim that the pre-existing contributions were created by the solo founder or
+during this Buildathon.
+
+Before final submission, re-confirm only if project ownership or contributor
+status changes:
 
 - which aliases belong to the owner;
 - whether every other contributor authorized inclusion of their work in this
@@ -45,17 +54,17 @@ header does not establish a license for the entire repository.
 
 | Asset group | Git provenance | Rights status |
 | --- | --- | --- |
-| `hero-bg.jpg` | Added in the Dec 2025 frontend initialization by `wuyangfan` | Source/license not documented |
-| Original AI/crypto/stocks/tech icons | Added in the same Dec 2025 initialization | Source/license not documented |
-| Processed icon variants | Derived repository assets | Depends on original icon rights |
+| `hero-bg.jpg` | Added in the Dec 2025 frontend initialization by `wuyangfan` | Replace during the official event window with a newly created, provenance-recorded asset |
+| Original AI/crypto/stocks/tech icons | Added in the same Dec 2025 initialization | Replace during the official event window with newly created, provenance-recorded assets |
+| Processed icon variants | Derived repository assets | Replace together with the originals |
 | Signal402 project cover | Added by `zdl` on Aug 28, 2026 | Confirm authoring/generation source and any input assets |
 | Demo and pitch videos | Added by `zdl` on Aug 28, 2026 | Confirm narration, music, fonts, screenshots, and embedded assets |
 | Pitch PPTX | Added by `zdl` on Aug 28, 2026 | Confirm slide media, logos, fonts, screenshots, and claims |
 
 The available repository documentation contains no source, license, or
-attribution record for the inherited raster assets. Before final submission,
-either document their origin and permitted use or replace them during the
-official event window with newly created assets whose provenance is recorded.
+attribution record for the inherited raster assets. The owner chose replacement
+during the official event window. Record the creation prompts or source files,
+date, author/tool, input rights, and final hashes for every replacement.
 
 Replacing inherited visuals during the event can also form part of the honest
 in-window design work, but it must not be used to disguise third-party code or
@@ -99,10 +108,11 @@ Before publishing an updated deck or video, complete all of the following:
 
 Do not make the final originality/IP declaration until the owner confirms:
 
-1. The identity and authorization status of all historical contributors.
-2. The provenance or replacement plan for inherited images and icons.
+1. Re-confirm the historical contributor authorization if any ownership fact
+   changes. The current owner statement resolves this gate operationally.
+2. Complete and document the chosen in-window replacement of inherited images
+   and icons.
 3. The rights to the project cover, deck, videos, narration, music, fonts, and
    screenshots.
 4. Whether to keep the repository unlicensed or adopt a specific license.
 5. The accuracy of the solo-founder plus AI-agent disclosure.
-

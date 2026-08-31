@@ -45,7 +45,9 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 - [ ] Resolve the terms conflict on existing projects and the Oct 1 versus Oct 4 submission deadline with the organizers; operate to Oct 1 unless written clarification says otherwise.
 - [ ] Preserve the pre-event baseline and complete more-than-trivial development during the official Buildathon window.
 - [ ] Reconcile every field against `docs/submission-field-map.md`, including location, prize track, deployment details, and AI-assistance disclosure.
-- [ ] Resolve historical contributor authority, inherited asset provenance, media rights, and repository licensing questions in `docs/ip-provenance-review.md`.
+- [x] Owner confirmed `zedili` and `zdl` are the same person and that the other historical project-team contributors authorized submission use.
+- [ ] Replace the inherited hero and icon assets during the official event window and record complete provenance; see `docs/ip-provenance-review.md`.
+- [ ] Resolve final media rights and repository licensing questions in `docs/ip-provenance-review.md`.
 - [ ] Complete a full-slide visual and source audit of the final pitch deck and videos after the in-window update.
 - [ ] Obtain explicit owner acceptance of the official terms, including publicity, data sharing, grant-agreement, compliance, tax, and potential milestone obligations.
 - [ ] Confirm the HackQuest submission window is currently open before submitting.

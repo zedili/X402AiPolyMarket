@@ -65,6 +65,17 @@ machine client, and creates measurable reliability evidence.
 - Update the submission's Progress During Hackathon field with only work landed
   after the recorded baseline.
 
+### 6. Provenance-clean visual refresh
+
+- Replace the inherited hero background and AI/crypto/stocks/tech icon set
+  during the official event window.
+- Use newly created assets with recorded prompts or source files, date,
+  author/tool, input rights, and SHA-256 hashes.
+- Update the application, cover, deck, and videos consistently where those
+  visuals appear.
+- Preserve the old files only in the pre-event Git baseline; do not reuse them
+  in the final submitted build unless their rights are separately documented.
+
 ## Acceptance gates
 
 - All new implementation commits have timestamps inside the official window.
@@ -85,9 +96,10 @@ machine client, and creates measurable reliability evidence.
 3. **Sep 19–22:** integrate optional registry attestation and the reference
    client.
 4. **Sep 23–25:** implement the evaluation harness and failure-path coverage.
-5. **Sep 26–27:** deploy, run testnet proof transactions, and collect evidence.
-6. **Sep 28–29:** update videos, submission copy, and judge Q&A.
-7. **Sep 30 by 8:00 PM UTC+8:** complete the final owner-confirmed submission,
+5. **Sep 23–25:** create and integrate the provenance-clean visual refresh.
+6. **Sep 26–27:** deploy, run testnet proof transactions, and collect evidence.
+7. **Sep 28–29:** update videos, submission copy, and judge Q&A.
+8. **Sep 30 by 8:00 PM UTC+8:** complete the final owner-confirmed submission,
    ahead of the earlier Oct 1 terms deadline.
 
 ## Scope controls
@@ -99,4 +111,3 @@ machine client, and creates measurable reliability evidence.
 - Do not require registry attestation for report purchase; it remains an
   optional proof layer.
 - Prefer one complete, measurable agent workflow over additional UI breadth.
-
