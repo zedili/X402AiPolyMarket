@@ -65,6 +65,32 @@ started, replace it with the following truthful interim text before Sep 14:
 This is a public HackQuest edit. Obtain explicit owner confirmation immediately
 before saving it.
 
+## HackQuest acknowledgment placement
+
+The public Team tab already labels the entry **Solo Project** and lists only
+`qwe962456`. Keep that formal team state unchanged. To honor the owner's request
+without implying that historical contributors are current entrants, append this
+text to the public project description when making the approved pre-window edit:
+
+> Signal402 builds on the earlier X402AiPolyMarket prototype. We thank the early
+> project-team contributors whose work is preserved in the Git history,
+> including `wuyangfan`, `123skkda`, and `zhaohaisen`. They contributed to the
+> pre-event foundation and are not members of this solo Buildathon entry.
+
+This is the appropriate placement because HackQuest's Team tab represents
+formal current membership, while the Description can accurately distinguish
+historical contribution from the present entry.
+
+## Current portal state
+
+Observed on Aug 31, 2026 while signed in as the owner:
+
+- Project readiness is `100 Ready To Submit`.
+- The Team tab says `Solo Project` and contains only `qwe962456`.
+- The Buildathon tab's `Submitted Buildathons` list is empty, as expected before
+  the submission window opens and the final submit action is completed.
+- Registration on the Singapore event page remains `Registered`.
+
 ## Event-specific fields to resolve
 
 ### Location
