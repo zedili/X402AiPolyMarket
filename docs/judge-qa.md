@@ -98,7 +98,9 @@ an evaluation harness, an agent-native API, and initial paid-user validation.
 It is a solo-founder project supported by AI development agents. The founder
 owns the product decisions and submission; AI agents assisted with engineering,
 testing, security review, documentation, and event operations. Do not imply a
-larger human team.
+larger current human team. Signal402 builds on the earlier X402AiPolyMarket
+prototype, and the submission publicly acknowledges its historical project-team
+contributors as preserved in Git history.
 
 ## Prize and milestone positioning
 
@@ -120,4 +122,3 @@ machine-readable payment terms, wallet authorization, server-side structured
 analysis, failure-safe settlement, and an onchain receipt on Arbitrum. Its scope
 is honest and testable, and its next milestones turn a working technical proof
 into a measurable business experiment.
-

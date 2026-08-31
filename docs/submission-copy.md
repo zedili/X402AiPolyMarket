@@ -99,6 +99,14 @@ x402 is most useful when it is treated as an application boundary, not a checkou
 
 Solo founder and full-stack builder, supported by AI development agents.
 
+## Acknowledgments
+
+Signal402 builds on the earlier X402AiPolyMarket prototype. We gratefully
+acknowledge the early project-team contributors whose work is preserved in the
+Git history, including `wuyangfan`, `123skkda`, and `zhaohaisen`. They are
+historical contributors to the pre-existing baseline, not current Buildathon
+team members.
+
 ## Responsible-use statement
 
 Signal402 provides informational analysis only. It does not guarantee outcomes, manage funds, or execute trades. The Buildathon demo uses testnet assets only.

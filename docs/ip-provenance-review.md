@@ -19,6 +19,11 @@ team from the historical project team. Preserve contributor history and do not
 claim that the pre-existing contributions were created by the solo founder or
 during this Buildathon.
 
+The owner requested public acknowledgment of the early project team. Use the
+public Git author names `wuyangfan`, `123skkda`, and `zhaohaisen` in an
+acknowledgments section without treating them as registered Buildathon team
+members, publishing private contact details, or inventing GitHub handles.
+
 Before final submission, re-confirm only if project ownership or contributor
 status changes:
 
