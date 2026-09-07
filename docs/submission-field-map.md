@@ -48,10 +48,11 @@ the deadline, but do not rely on that as a recovery strategy.
 
 ## Pre-window public-field correction
 
-The live HackQuest project page was audited on Aug 31, 2026. Its current
-**Progress During Hackathon** field describes pre-event functionality as though
-it were already completed during the event. Because the official window has not
-started, replace it with the following truthful interim text before Sep 14:
+The live HackQuest project page was audited on Aug 31, 2026. Its original
+**Progress During Hackathon** field described pre-event functionality as though
+it were already completed during the event. After explicit owner confirmation,
+the field was corrected and publicly verified on Sep 7, 2026 with this truthful
+interim text:
 
 > Pre-event baseline recorded on Aug 31, 2026; none of the items below are
 > claimed as Buildathon-period work. Signal402 already has a live Polymarket
@@ -62,15 +63,17 @@ started, replace it with the following truthful interim text before Sep 14:
 > be recorded separately in a commit-linked changelog and this field will be
 > replaced with verified in-window progress before final submission.
 
-This is a public HackQuest edit. Obtain explicit owner confirmation immediately
-before saving it.
+The saved public page continued to show `100 Ready To Submit`. Replace this
+interim text only with verified, commit-linked work completed during the
+official window.
 
 ## HackQuest acknowledgment placement
 
-The public Team tab already labels the entry **Solo Project** and lists only
-`qwe962456`. Keep that formal team state unchanged. To honor the owner's request
-without implying that historical contributors are current entrants, append this
-text to the public project description when making the approved pre-window edit:
+The public Team tab labels the entry **Solo Project** and lists only
+`qwe962456`. That formal team state was left unchanged. To honor the owner's
+request without implying that historical contributors are current entrants,
+the following text was appended to the public project description and verified
+on Sep 7, 2026:
 
 > Signal402 builds on the earlier X402AiPolyMarket prototype. We thank the early
 > project-team contributors whose work is preserved in the Git history,
@@ -83,9 +86,12 @@ historical contribution from the present entry.
 
 ## Current portal state
 
-Observed on Aug 31, 2026 while signed in as the owner:
+Observed again on Sep 7, 2026 while signed in as the owner:
 
 - Project readiness is `100 Ready To Submit`.
+- The public Description contains the historical-contributor acknowledgment.
+- The public Progress field contains the pre-event baseline disclosure and says
+  substantive Buildathon development has not started.
 - The Team tab says `Solo Project` and contains only `qwe962456`.
 - The Buildathon tab's `Submitted Buildathons` list is empty, as expected before
   the submission window opens and the final submit action is completed.
