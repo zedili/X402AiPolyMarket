@@ -40,6 +40,7 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 ## Final external action
 
 - [x] Re-ran frontend tests, TypeScript checks, the Next.js production build, contract tests, Go tests, and production HTTP smoke checks on Aug 31, 2026.
+- [x] Re-ran the production HTTP smoke check on Sep 7, 2026 after the public-field correction: home `200`, AI ready, 20 live markets, and an unpaid analysis request returned x402 `402` with `Payment-Required`.
 - [x] Confirmed the HackQuest-displayed submission window: Sep 14, 2026 01:01 through Oct 4, 2026 23:59 (observed in Asia/Shanghai).
 - [x] Reviewed all 14 pages of the official Singapore terms for eligibility, originality, IP, publicity, data sharing, prize, and milestone obligations; see `docs/terms-risk-review.md`.
 - [x] Sent the organizer a clarification request on Aug 31, 2026 covering existing-project eligibility, the Oct 1 versus Oct 4 deadline conflict, and disclosed AI-agent assistance.
@@ -47,7 +48,7 @@ Use this file as the final pre-submit gate for the Arbitrum Open House Singapore
 - [ ] Preserve the pre-event baseline and complete more-than-trivial development during the official Buildathon window.
 - [ ] Reconcile every field against `docs/submission-field-map.md`, including location, prize track, deployment details, and AI-assistance disclosure.
 - [x] Owner confirmed `zedili` and `zdl` are the same person and that the other historical project-team contributors authorized submission use.
-- [ ] Replace the live HackQuest **Progress During Hackathon** field with the truthful pre-window baseline text in `docs/submission-field-map.md`; obtain owner confirmation immediately before saving the public edit.
+- [x] Replaced the live HackQuest **Progress During Hackathon** field with the truthful pre-window baseline and appended the historical-contributor acknowledgment after explicit owner confirmation; publicly verified on Sep 7, 2026 with readiness still `100 Ready To Submit`.
 - [ ] Replace the inherited hero and icon assets during the official event window and record complete provenance; see `docs/ip-provenance-review.md`.
 - [ ] Resolve final media rights and repository licensing questions in `docs/ip-provenance-review.md`.
 - [ ] Complete a full-slide visual and source audit of the final pitch deck and videos after the in-window update.
