@@ -131,6 +131,11 @@ owner's account. Gmail's Sent folder was checked after delivery. Awaiting a
 written response; until then, use Oct 1, 2026 at 11:59 PM SGT as the controlling
 submission deadline.
 
+**Follow-up check:** Gmail was searched again on Sep 7, 2026 (UTC+8). No
+organizer reply was present; the only matching conversation was the Aug 31
+outbound clarification email. Continue using the conservative deadline and do
+not start substantive Buildathon implementation before Sep 14.
+
 The Aug 31 follow-up audit also found a reward-announcement mismatch: HackQuest
 shows Oct 12, 2026 at 14:00, while the reviewed Terms PDF shows Oct 4, 2026 at
 17:00 SGT. Treat both as provisional and monitor the organizer's written reply
